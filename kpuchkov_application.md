@@ -3,6 +3,7 @@
 ### Группа: 10 -  МИ -  2
 ### Электронная почта: fenyakit@yandex.ru
 ### VK: https://vk.com/kir334
+### Репозиторий с кодом: https://github.com/kepper104/toilets-everywhere
 
 
 **[НАЗВАНИЕ ПРОЕКТА]**
