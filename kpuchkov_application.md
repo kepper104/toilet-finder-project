@@ -59,7 +59,7 @@ Android – версия Oreo (Android 8) и выше, 300МБ свободно�
 
 **[ИНСТРУМЕНТЫ РАЗРАБОТКИ]**
 
-Kotlin, Android Studio, PostgreSQL
+Kotlin, Android Studio, PostgreSQL, Python
 
 
 **[ЭТАПЫ РАЗРАБОТКИ]**
