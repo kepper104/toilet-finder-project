@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessible
 import androidx.compose.material.icons.filled.BabyChangingStation
 import androidx.compose.material.icons.filled.LocalParking
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -51,7 +53,7 @@ fun ListScreen(
 
         if (mainViewModel.toiletViewDetailsState.currentDetailScreen == CurrentDetailsScreen.LIST){
             BackHandler (
-                onBack = {Log.d("BackLogger", "Handled back from MAP");mainViewModel.leaveToiletViewDetailsScreen()}
+                onBack = {Log.d("BackLogger", "Handled back from MAP"); mainViewModel.leaveToiletViewDetailsScreen()}
             )
             DetailsScreen()
             return
@@ -99,7 +101,7 @@ fun ToiletCard(toilet: Toilet = Toilet(), navigateToDetails: (toilet: Toilet, so
         }
         Text(text = "Currently ${getToiletOpenString(toilet)} - working hours ${getToiletWorkingHours(toilet)}")
         Text(text = if (toilet.cost == 0) "Free" else toilet.cost.toString() + "₽")
-
+        Divider(modifier = Modifier.fillMaxWidth())
     }
 
 }

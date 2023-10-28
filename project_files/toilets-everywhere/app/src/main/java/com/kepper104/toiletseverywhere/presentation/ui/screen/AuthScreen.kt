@@ -37,6 +37,7 @@ fun AuthScreen(
         onBack = { mainViewModel.clearAuthState() }
     )
 
+
     when (mainViewModel.authState.status){
         AuthUiStatus.MAIN -> { AuthScreenMain(navigator, mainViewModel) }
         AuthUiStatus.REGISTER -> { AuthScreenRegister(navigator, mainViewModel) }

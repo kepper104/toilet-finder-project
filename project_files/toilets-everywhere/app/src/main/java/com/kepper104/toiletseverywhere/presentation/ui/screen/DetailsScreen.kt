@@ -67,10 +67,7 @@ fun DetailsScreen() {
                 text = "${
                     getDistanceMeters(
                         mainViewModel.mapState.userPosition,
-                        LatLng(
-                            toilet.coordinates.first.toDouble(),
-                            toilet.coordinates.second.toDouble()
-                        )
+                        toilet.coordinates
                     )
                 } away"
             )
@@ -110,8 +107,8 @@ fun DetailsScreen() {
             }
         }
 
-        Button(onClick = { /*TODO*/ }) {
-            Text(text = "")
+        Button(onClick = { mainViewModel.moveCameraToToiletLocation(toilet = toilet) }) {
+            Text(text = "Go to map")
         }
         
 

@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.kepper104.toiletseverywhere.data.APP_LAUNCH_INIT_DELAY
 import com.kepper104.toiletseverywhere.data.LoginStatus
 import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
 import com.kepper104.toiletseverywhere.data.Tags
@@ -40,7 +41,9 @@ class RepositoryImplementation (
     init {
         GlobalScope.launch {
             // TODO check if navbackstackentry is built rather than waiting
-            delay(500L)
+            // TODO EXTRA IMPORTANT, NEED TO INCREASE DELAY ON WORSE DEVICES
+            delay(APP_LAUNCH_INIT_DELAY)
+
             refreshCurrentUser()
 
         }

@@ -10,12 +10,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.navigation.BottomNavigationBar
 import com.kepper104.toiletseverywhere.presentation.navigation.HandleEvents
+import com.kepper104.toiletseverywhere.presentation.navigation.HandleNavigationEvents
 import com.kepper104.toiletseverywhere.presentation.navigation.NavScaffold
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.AuthScreenDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.MainScreenDestination
@@ -36,6 +38,8 @@ fun MainScreen(
 ) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
+    Log.d(Tags.CompositionLogger.tag, "Entering MainScreen!")
+
     var currentRoute: Route = AuthScreenDestination
 
     val isLoggedInFlowChecker = mainViewModel.isLoggedInFlow.collectAsState(initial = null)
@@ -58,6 +62,7 @@ fun MainScreen(
     }
 
     HandleEvents(viewModel = mainViewModel, composeContext = LocalContext.current)
+    HandleNavigationEvents(viewModel = mainViewModel, navController = navController)
 
     NavScaffold(
         navController = navController,
@@ -79,5 +84,8 @@ fun MainScreen(
             startRoute = currentRoute
         )
     }
+
+
+
 }
 

@@ -27,6 +27,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
 import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
+import com.kepper104.toiletseverywhere.data.NavigationEvent
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
@@ -230,7 +231,6 @@ fun MapTopAppBar() {
 }
 @Composable
 fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
-    val loggerTag = "EventLogger"
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collect { event ->
             when (event) {
@@ -250,3 +250,23 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
     }
 }
 
+@Composable
+fun HandleNavigationEvents(viewModel: MainViewModel, navController: NavHostController) {
+    LaunchedEffect(key1 = true) {
+        viewModel.navigationEventFlow.collect { navigationEvent ->
+            when (navigationEvent){
+                NavigationEvent.NavigateToList -> viewModel.placeholder()
+                NavigationEvent.NavigateToMap -> {
+                    navController.navigate(BottomBarDestination.MapView.direction){
+//                        popUpTo(NavGraphs.root){
+//                            saveState = true
+//                        }
+                        launchSingleTop = true
+                        restoreState = true
+                    }
+                }
+                NavigationEvent.NavigateToSettings -> viewModel.placeholder()
+            }
+        }
+    }
+}

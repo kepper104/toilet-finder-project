@@ -15,6 +15,7 @@ import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.MapSc
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.SettingsScreenDestination
 
 const val NOT_LOGGED_IN_STRING = "NOTLOGGEDIN"
+const val APP_LAUNCH_INIT_DELAY = 500L
 
 enum class RegistrationError (val errorMessage: String){
     PASSWORD_TOO_SHORT ("Password must be at least $MIN_PASSWORD_LENGTH symbols!"),
@@ -60,4 +61,10 @@ sealed class ScreenEvent{
     object ToiletAddingEnabledToast: ScreenEvent()
     object ToiletAddingDisabledToast: ScreenEvent()
     object PlaceholderFunction: ScreenEvent()
+}
+
+sealed class NavigationEvent{
+    object NavigateToMap: NavigationEvent()
+    object NavigateToList: NavigationEvent()
+    object NavigateToSettings: NavigationEvent()
 }

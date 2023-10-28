@@ -22,7 +22,7 @@ fun fromApiToilet(apiToilet: ApiToilet): Toilet{
     val xStr = values[0].trim().toFloat()
     val yStr = values[1].trim().toFloat()
 
-    val coords = Pair(xStr, yStr)
+    val coords = LatLng(xStr.toDouble(), yStr.toDouble())
 
     val creationDate: LocalDate = LocalDate.parse(apiToilet.creation_date_, dateFormatter)
 
@@ -53,7 +53,7 @@ fun toApiToilet(toilet: Toilet): ApiToilet{
     return ApiToilet(
         id_ = toilet.id,
         author_id_ = toilet.authorId,
-        coordinates_ = "(${toilet.coordinates.first}, ${toilet.coordinates.second})",
+        coordinates_ = "(${toilet.coordinates.latitude}, ${toilet.coordinates.longitude})",
         place_name_ = toilet.placeName,
         is_public_ = toilet.isPublic,
         disabled_access_ = toilet.disabledAccess,
@@ -69,7 +69,7 @@ fun toApiToilet(toilet: Toilet): ApiToilet{
 fun toToiletMarker(toilet: Toilet): ToiletMarker{
     return ToiletMarker(
         id = toilet.id,
-        position = LatLng(toilet.coordinates.first.toDouble(), toilet.coordinates.second.toDouble()),
+        position = toilet.coordinates,
         rating = 0f, // TODO get rating from separate api request
         isPublic = toilet.isPublic,
         toilet = toilet

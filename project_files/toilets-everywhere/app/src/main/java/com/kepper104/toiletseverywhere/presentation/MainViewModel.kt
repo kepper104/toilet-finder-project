@@ -2,27 +2,29 @@ package com.kepper104.toiletseverywhere.presentation
 
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.MarkerState
+import com.kepper104.toiletseverywhere.data.APP_LAUNCH_INIT_DELAY
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
 import com.kepper104.toiletseverywhere.data.LoginStatus
+import com.kepper104.toiletseverywhere.data.NavigationEvent
 import com.kepper104.toiletseverywhere.data.RegistrationError
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.data.toToiletMarker
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.repository.Repository
+import com.kepper104.toiletseverywhere.presentation.ui.screen.NavGraphs
 import com.kepper104.toiletseverywhere.presentation.ui.state.AuthState
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletViewDetailsState
@@ -31,6 +33,9 @@ import com.kepper104.toiletseverywhere.presentation.ui.state.MapState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NavigationState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NewToiletDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletsState
+import com.ramcosta.composedestinations.navigation.navigate
+import com.ramcosta.composedestinations.navigation.popBackStack
+import com.ramcosta.composedestinations.navigation.popUpTo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -60,6 +65,9 @@ class MainViewModel @Inject constructor(
 
     private val _eventFlow = MutableSharedFlow<ScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
+
+    private val _navigationEventFlow = MutableSharedFlow<NavigationEvent>()
+    val navigationEventFlow = _navigationEventFlow.asSharedFlow()
 
 
     private lateinit var locationClient: FusedLocationProviderClient
@@ -109,13 +117,39 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun moveCameraToToiletLocation(toilet: Toilet){
+        mapState = mapState.copy(cameraPosition = CameraPositionState(CameraPosition(toilet.coordinates, 15F, 0F, 0F)))
+        leaveToiletViewDetailsScreen()
+        changeNavigationState(BottomBarDestination.MapView)
+        viewModelScope.launch {
+            _navigationEventFlow.emit(NavigationEvent.NavigateToMap)
+        }
+    }
 
+    fun bottomBarNavigateTo(destination: BottomBarDestination, isCurrentDestOnBackStack: Boolean, navController: NavHostController){
+        if (navigationState.currentDestination == destination){
+            leaveToiletViewDetailsScreen()
+        }
+        changeNavigationState(destination)
+
+        if (isCurrentDestOnBackStack){
+            navController.popBackStack(destination.direction, false)
+            return
+        }
+        navController.navigate(destination.direction){
+            popUpTo(NavGraphs.root){
+                saveState = true
+            }
+            launchSingleTop = true
+            restoreState = true
+        }
+    }
 
     fun createToilet(){
         val toilet = Toilet(
             id = 0,
             authorId = repository.currentUser.id,
-            coordinates = Pair(newToiletDetailsState.coordinates.latitude.toFloat(), newToiletDetailsState.coordinates.longitude.toFloat()),
+            coordinates = newToiletDetailsState.coordinates,
             placeName = if (!newToiletDetailsState.isPublic) newToiletDetailsState.name else "Public Toilet",
             isPublic = newToiletDetailsState.isPublic,
             disabledAccess = newToiletDetailsState.disabledAccess,
@@ -127,6 +161,7 @@ class MainViewModel @Inject constructor(
             cost = newToiletDetailsState.cost,
             authorName = repository.currentUser.displayName
         )
+
         viewModelScope.launch {
             repository.createToilet(toilet)
             newToiletDetailsState = newToiletDetailsState.copy(enabled = false, name = "", isPublic = true, cost = 0, openingTime = LocalTime.of(6, 0), closingTime = LocalTime.of(23, 0), disabledAccess = false, babyAccess = false, parkingNearby = false)
@@ -136,6 +171,7 @@ class MainViewModel @Inject constructor(
             refreshToiletMarkers()
         }
     }
+
 
     fun triggerEvent(event: ScreenEvent){
         viewModelScope.launch {
@@ -211,7 +247,7 @@ class MainViewModel @Inject constructor(
 
     private fun collectLoginStatusFlow(){
         viewModelScope.launch {
-            delay(500L)
+            delay(APP_LAUNCH_INIT_DELAY)
             loginStatusFlow.collect {loginStatus ->
                 when(loginStatus){
                     LoginStatus.None -> {}
@@ -280,8 +316,6 @@ class MainViewModel @Inject constructor(
         Log.d(Tags.MainViewModelTag.toString(), "Leaving details screen")
         toiletViewDetailsState = toiletViewDetailsState.copy(toilet = null, currentDetailScreen = CurrentDetailsScreen.NONE)
         Log.d(Tags.MainViewModelTag.toString(), "Left details: $toiletViewDetailsState")
-
-
     }
 
     fun leaveNewToiletDetailsScreen(){
@@ -294,7 +328,7 @@ class MainViewModel @Inject constructor(
         Log.d(Tags.MainViewModelTag.toString(), mapState.newToiletMarkerState.toString())
         newToiletDetailsState = newToiletDetailsState.copy(
             enabled = true,
-            coordinates = mapState.newToiletMarkerState!!.position
+            coordinates = mapState.cameraPosition.position.target
         )
     }
     private fun refreshToiletMarkers(){

@@ -46,7 +46,10 @@ fun WelcomeScreen() {
         val locationClient = remember {
             LocationServices.getFusedLocationProviderClient(context)
         }
-        mainViewModel.enableLocationServices(locationClient)
+        LaunchedEffect(key1 = locationPermissionState.status.isGranted){
+            mainViewModel.enableLocationServices(locationClient)
+
+        }
     }
 
 

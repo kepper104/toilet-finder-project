@@ -46,7 +46,7 @@ fun SettingsScreen(
                 )
             }
 
-            Text(text = mainViewModel.mapState.cameraPosition.position.target.toString())
+//            Text(text = mainViewModel.mapState.cameraPosition.position.target.toString())
         }
     }
 }
