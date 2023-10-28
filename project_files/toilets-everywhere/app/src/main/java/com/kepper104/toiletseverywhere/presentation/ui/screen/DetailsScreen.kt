@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Accessible
 import androidx.compose.material.icons.filled.BabyChangingStation
 import androidx.compose.material.icons.filled.LocalParking
 import androidx.compose.material.icons.filled.StarRate
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -81,11 +82,13 @@ fun DetailsScreen() {
 
         Text(text = getToiletWorkingHours(toilet, true))
         Text(text = "Currently ${getToiletOpenString(toilet)}")
+
         if (toilet.disabledAccess || toilet.babyAccess || toilet.parkingNearby){
             Text(text = "Features:")
         }else{
             Text(text = "Has no features ;(")
         }
+
         if (toilet.disabledAccess){
             Row {
                 Icon(imageVector = Icons.Default.Accessible, contentDescription = "Wheelchair icon")
@@ -105,6 +108,10 @@ fun DetailsScreen() {
                 Icon(imageVector = Icons.Default.LocalParking, contentDescription = "Parking nearby icon")
                 Text(text = "Has a parking nearby")
             }
+        }
+
+        Button(onClick = { /*TODO*/ }) {
+            Text(text = "")
         }
         
 

@@ -45,6 +45,8 @@ fun SettingsScreen(
                     text = "Log Out"
                 )
             }
+
+            Text(text = mainViewModel.mapState.cameraPosition.position.target.toString())
         }
     }
 }

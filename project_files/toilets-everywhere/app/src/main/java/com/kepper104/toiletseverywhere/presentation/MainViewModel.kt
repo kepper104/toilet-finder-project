@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.MapProperties
 import com.google.maps.android.compose.MarkerState
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
@@ -153,7 +154,7 @@ class MainViewModel @Inject constructor(
                 res.addOnSuccessListener {
 
                     mapState = mapState.copy(
-                        cameraPosition = CameraPosition(LatLng(res.result.latitude, res.result.longitude), 15F, 0F, 0F),
+                        cameraPosition = CameraPositionState(CameraPosition(LatLng(res.result.latitude, res.result.longitude), 15F, 0F, 0F)),
                         userPosition = LatLng(res.result.latitude, res.result.longitude)
                     )
                     Log.d(Tags.MainViewModelTag.toString(), "Successfully got position on LocationServices enable")
