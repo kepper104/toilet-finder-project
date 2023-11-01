@@ -1,8 +1,8 @@
 package com.kepper104.toiletseverywhere.domain.repository
 
 import com.kepper104.toiletseverywhere.data.LoginStatus
-import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.LocalUser
+import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
 
 interface Repository{

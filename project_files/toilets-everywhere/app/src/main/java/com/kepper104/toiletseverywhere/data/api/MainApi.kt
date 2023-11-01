@@ -2,7 +2,6 @@ package com.kepper104.toiletseverywhere.data.api
 
 import com.kepper104.toiletseverywhere.domain.model.ApiToilet
 import com.kepper104.toiletseverywhere.domain.model.ApiUser
-import com.kepper104.toiletseverywhere.domain.model.Toilet
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
