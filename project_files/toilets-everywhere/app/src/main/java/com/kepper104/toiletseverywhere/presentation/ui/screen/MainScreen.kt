@@ -1,19 +1,16 @@
 package com.kepper104.toiletseverywhere.presentation.ui.screen
 
 import android.annotation.SuppressLint
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
-import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
+import com.kepper104.toiletseverywhere.isNavStackReady
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.navigation.BottomNavigationBar
 import com.kepper104.toiletseverywhere.presentation.navigation.HandleEvents
@@ -27,6 +24,7 @@ import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.annotation.RootNavGraph
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.spec.Route
+import kotlinx.coroutines.delay
 
 
 @RootNavGraph(start = true)
@@ -44,20 +42,30 @@ fun MainScreen(
 
     val isLoggedInFlowChecker = mainViewModel.isLoggedInFlow.collectAsState(initial = null)
 
+    LaunchedEffect(key1 = Unit){
+        Log.d(Tags.NavigationLogger.tag, "Getting navstack ready..")
+        while (!isNavStackReady){
+            Log.d(Tags.NavigationLogger.tag, "Still not ready...")
 
-    if (isLoggedInFlowChecker.value == false){
-        currentRoute = AuthScreenDestination
-        Log.d(Tags.CompositionLogger.toString(), "Going to login")
-
-        navController.navigate(AuthScreenDestination){
-            launchSingleTop = true
+            delay(16)
         }
-    } else if (isLoggedInFlowChecker.value == true){
-        currentRoute = WelcomeScreenDestination
-        Log.d(Tags.CompositionLogger.toString(), "Going to welcome")
+        Log.d(Tags.NavigationLogger.tag, "Now navstack is ready!")
 
-        navController.navigate(MainScreenDestination){
-            launchSingleTop = true
+
+        if (isLoggedInFlowChecker.value == false){
+            currentRoute = AuthScreenDestination
+            Log.d(Tags.CompositionLogger.toString(), "Going to login")
+
+            navController.navigate(AuthScreenDestination){
+                launchSingleTop = true
+            }
+        } else if (isLoggedInFlowChecker.value == true){
+            currentRoute = WelcomeScreenDestination
+            Log.d(Tags.CompositionLogger.toString(), "Going to welcome")
+
+            navController.navigate(MainScreenDestination){
+                launchSingleTop = true
+            }
         }
     }
 

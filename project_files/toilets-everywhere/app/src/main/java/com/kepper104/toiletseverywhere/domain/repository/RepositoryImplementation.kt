@@ -7,7 +7,6 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.kepper104.toiletseverywhere.data.APP_LAUNCH_INIT_DELAY
 import com.kepper104.toiletseverywhere.data.LoginStatus
 import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
 import com.kepper104.toiletseverywhere.data.Tags
@@ -18,15 +17,13 @@ import com.kepper104.toiletseverywhere.data.api.RegisterData
 import com.kepper104.toiletseverywhere.data.fromApiToilet
 import com.kepper104.toiletseverywhere.data.fromApiUser
 import com.kepper104.toiletseverywhere.data.toApiToilet
-import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.LocalUser
+import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 @OptIn(DelicateCoroutinesApi::class)
 class RepositoryImplementation (
@@ -40,12 +37,7 @@ class RepositoryImplementation (
 
     init {
         GlobalScope.launch {
-            // TODO check if navbackstackentry is built rather than waiting
-            // TODO EXTRA IMPORTANT, NEED TO INCREASE DELAY ON WORSE DEVICES
-            delay(APP_LAUNCH_INIT_DELAY)
-
             refreshCurrentUser()
-
         }
     }
 

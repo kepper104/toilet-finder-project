@@ -17,6 +17,7 @@ import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.Setti
 const val NOT_LOGGED_IN_STRING = "NOTLOGGEDIN"
 const val APP_LAUNCH_INIT_DELAY = 500L
 
+
 enum class RegistrationError (val errorMessage: String){
     PASSWORD_TOO_SHORT ("Password must be at least $MIN_PASSWORD_LENGTH symbols!"),
     PASSWORD_CONTAINS_NO_UPPERCASE("Password must contain at least 1 capital letter!"),
@@ -53,7 +54,8 @@ enum class Tags(val tag: String){
     MainViewModelTag("ViewModelLogger"),
     RepositoryLogger("RepositoryLogger"),
     CompositionLogger("CompositionLogger"),
-    NavigationLogger("NavigationLogger")
+    NavigationLogger("NavigationLogger"),
+    TempLogger("TempLogger")
 
 }
 

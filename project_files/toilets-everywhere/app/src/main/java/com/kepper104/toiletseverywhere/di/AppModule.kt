@@ -19,6 +19,10 @@ import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
 
+//const val SERVER_IP = "http://kepper104.fun:5010"
+const val SERVER_IP = "http://79.120.9.3:5010"
+
+
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
@@ -38,7 +42,7 @@ object AppModule {
 
         return Retrofit.Builder()
             .addConverterFactory(MoshiConverterFactory.create(moshi))
-            .baseUrl("http://kepper104.fun:5010")
+            .baseUrl(SERVER_IP)
             .build()
             .create(MainApi::class.java)
     }

@@ -13,7 +13,6 @@ import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.MapProperties
-import com.kepper104.toiletseverywhere.data.APP_LAUNCH_INIT_DELAY
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
 import com.kepper104.toiletseverywhere.data.LoginStatus
@@ -27,11 +26,11 @@ import com.kepper104.toiletseverywhere.domain.repository.Repository
 import com.kepper104.toiletseverywhere.presentation.ui.screen.NavGraphs
 import com.kepper104.toiletseverywhere.presentation.ui.state.AuthState
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
-import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletViewDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.LoggedInUserState
 import com.kepper104.toiletseverywhere.presentation.ui.state.MapState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NavigationState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NewToiletDetailsState
+import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletViewDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletsState
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popBackStack
@@ -75,14 +74,6 @@ class MainViewModel @Inject constructor(
     lateinit var scaffoldPadding: PaddingValues
 
 
-    init {
-        collectLoginStatusFlow()
-        try {
-            getLatestToilets()
-        } catch (e: Exception){
-            Log.e(Tags.MainViewModelTag.toString(), "Error connecting to server")
-        }
-    }
 
     private var prevLoggedInValue = false
 
@@ -116,6 +107,12 @@ class MainViewModel @Inject constructor(
             delay(200L)
         }
     }
+    init {
+        collectLoginStatusFlow()
+
+        getLatestToilets()
+    }
+
 
     fun moveCameraToToiletLocation(toilet: Toilet){
         mapState = mapState.copy(cameraPosition = CameraPositionState(CameraPosition(toilet.coordinates, 15F, 0F, 0F)))
@@ -247,7 +244,6 @@ class MainViewModel @Inject constructor(
 
     private fun collectLoginStatusFlow(){
         viewModelScope.launch {
-            delay(APP_LAUNCH_INIT_DELAY)
             loginStatusFlow.collect {loginStatus ->
                 when(loginStatus){
                     LoginStatus.None -> {}

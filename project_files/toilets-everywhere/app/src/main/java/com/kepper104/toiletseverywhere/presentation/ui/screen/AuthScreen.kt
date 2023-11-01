@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
+import com.kepper104.toiletseverywhere.isNavStackReady
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
@@ -33,6 +34,9 @@ fun AuthScreen(
     mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
 
 ) {
+
+    isNavStackReady = true
+
     BackHandler(
         onBack = { mainViewModel.clearAuthState() }
     )
