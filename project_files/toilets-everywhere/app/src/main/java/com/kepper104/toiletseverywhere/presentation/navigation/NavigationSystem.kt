@@ -245,6 +245,13 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
                 ScreenEvent.PlaceholderFunction -> {
                     makeToast("This function is not implemented", composeContext, Toast.LENGTH_SHORT)
                 }
+
+                ScreenEvent.ToiletCreationFailToast -> {
+                    makeToast("An error occurred when creating a new toilet", composeContext, Toast.LENGTH_SHORT)
+                }
+                ScreenEvent.ToiletCreationSuccessToast -> {
+                    makeToast("New toilet created successfully!", composeContext, Toast.LENGTH_SHORT)
+                }
             }
         }
     }

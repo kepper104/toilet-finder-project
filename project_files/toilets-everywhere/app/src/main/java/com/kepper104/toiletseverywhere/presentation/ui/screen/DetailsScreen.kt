@@ -22,7 +22,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kepper104.toiletseverywhere.data.Tags
-import com.kepper104.toiletseverywhere.data.getDistanceMeters
+import com.kepper104.toiletseverywhere.data.getToiletDistanceMeters
 import com.kepper104.toiletseverywhere.data.getToiletOpenString
 import com.kepper104.toiletseverywhere.data.getToiletWorkingHoursString
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
@@ -64,7 +64,7 @@ fun DetailsScreen() {
         Row {
             Text(
                 text = "${
-                    getDistanceMeters(
+                    getToiletDistanceMeters(
                         mainViewModel.mapState.userPosition,
                         toilet.coordinates
                     )

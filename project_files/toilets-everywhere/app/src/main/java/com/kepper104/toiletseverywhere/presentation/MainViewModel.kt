@@ -1,6 +1,7 @@
 package com.kepper104.toiletseverywhere.presentation
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,10 +17,12 @@ import com.google.maps.android.compose.MapProperties
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
 import com.kepper104.toiletseverywhere.data.LoginStatus
+import com.kepper104.toiletseverywhere.data.MIN_PASSWORD_LENGTH
 import com.kepper104.toiletseverywhere.data.NavigationEvent
 import com.kepper104.toiletseverywhere.data.RegistrationError
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
+import com.kepper104.toiletseverywhere.data.getToiletDistanceMeters
 import com.kepper104.toiletseverywhere.data.toToiletMarker
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.repository.Repository
@@ -44,9 +47,6 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
-
-
-const val MIN_PASSWORD_LENGTH = 8
 
 
 @HiltViewModel
@@ -115,7 +115,7 @@ class MainViewModel @Inject constructor(
 
 
     fun moveCameraToToiletLocation(toilet: Toilet){
-        mapState = mapState.copy(cameraPosition = CameraPositionState(CameraPosition(toilet.coordinates, 15F, 0F, 0F)))
+        mapState = mapState.copy(cameraPosition = CameraPositionState(CameraPosition(toilet.coordinates, 17F, 0F, 0F)))
         leaveToiletViewDetailsScreen()
         changeNavigationState(BottomBarDestination.MapView)
         viewModelScope.launch {
@@ -123,25 +123,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    fun bottomBarNavigateTo(destination: BottomBarDestination, isCurrentDestOnBackStack: Boolean, navController: NavHostController){
-        if (navigationState.currentDestination == destination){
-            leaveToiletViewDetailsScreen()
-        }
-        changeNavigationState(destination)
-
-        if (isCurrentDestOnBackStack){
-            navController.popBackStack(destination.direction, false)
-            return
-        }
-        navController.navigate(destination.direction){
-            popUpTo(NavGraphs.root){
-                saveState = true
-            }
-            launchSingleTop = true
-            restoreState = true
-        }
-    }
-
+    
     fun createToilet(){
         val toilet = Toilet(
             id = 0,
@@ -160,12 +142,21 @@ class MainViewModel @Inject constructor(
         )
 
         viewModelScope.launch {
-            repository.createToilet(toilet)
-            newToiletDetailsState = newToiletDetailsState.copy(enabled = false, name = "", isPublic = true, cost = 0, openingTime = LocalTime.of(6, 0), closingTime = LocalTime.of(23, 0), disabledAccess = false, babyAccess = false, parkingNearby = false)
-            delay(1000)
-            getLatestToilets()
-            delay(1000)
-            refreshToiletMarkers()
+            try{
+                repository.createToilet(toilet)
+                newToiletDetailsState = newToiletDetailsState.copy(enabled = false, name = "", isPublic = true, cost = 0, openingTime = LocalTime.of(6, 0), closingTime = LocalTime.of(23, 0), disabledAccess = false, babyAccess = false, parkingNearby = false)
+
+                triggerEvent(ScreenEvent.ToiletCreationSuccessToast)
+                delay(2000)
+                getLatestToilets()
+                delay(1000)
+                refreshToiletMarkers()
+
+            } catch (e: Exception){
+                triggerEvent(ScreenEvent.ToiletCreationFailToast)
+            } finally {
+
+            }
         }
     }
 
@@ -329,8 +320,9 @@ class MainViewModel @Inject constructor(
     }
     private fun refreshToiletMarkers(){
         Log.d(Tags.MainViewModelTag.toString(), "Refreshing toilets")
-
-        mapState = mapState.copy(toiletMarkers = toiletsState.toiletList.map { toilet ->  toToiletMarker(toilet)})
+        var toiletList = toiletsState.toiletList.map { toilet ->  toToiletMarker(toilet)}
+        toiletList = toiletList.sortedBy { getToiletDistanceMeters(mapState.userPosition, it.position) }
+        mapState = mapState.copy(toiletMarkers = toiletList)
     }
 
     fun navigateBackButton(){

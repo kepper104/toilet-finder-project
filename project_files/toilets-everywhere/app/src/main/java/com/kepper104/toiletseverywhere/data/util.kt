@@ -89,10 +89,19 @@ fun fromApiUser(apiUser: ApiUser): User{
     )
 }
 
-fun getDistanceMeters(userPosition: LatLng, markerPosition: LatLng): String {
+fun getToiletDistanceMeters(userPosition: LatLng, toiletPosition: LatLng): Int {
     val res = FloatArray(10)
-    Location.distanceBetween(userPosition.latitude, userPosition.longitude, markerPosition.latitude, markerPosition.longitude, res)
-    val distanceMeters = res[0].toInt()
+    Location.distanceBetween(
+        userPosition.latitude,
+        userPosition.longitude,
+        toiletPosition.latitude,
+        toiletPosition.longitude,
+        res
+    )
+    return res[0].toInt()
+}
+
+fun getToiletDistanceString(distanceMeters: Int): String{
     return if (distanceMeters < 1000) distanceMeters.toString() + "m"
     else (distanceMeters / 1000).toString() + "km"
 }

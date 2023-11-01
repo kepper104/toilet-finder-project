@@ -1,8 +1,6 @@
 package com.kepper104.toiletseverywhere.presentation.ui.screen
 
-import android.content.Context
 import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
@@ -12,13 +10,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.android.gms.maps.model.BitmapDescriptor
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.kepper104.toiletseverywhere.data.Tags
-import com.kepper104.toiletseverywhere.data.getDistanceMeters
+import com.kepper104.toiletseverywhere.data.getToiletDistanceMeters
+import com.kepper104.toiletseverywhere.data.getToiletDistanceString
 import com.kepper104.toiletseverywhere.data.getToiletNameString
 import com.kepper104.toiletseverywhere.data.getToiletOpenString
 import com.kepper104.toiletseverywhere.data.getToiletPriceString
@@ -85,7 +82,11 @@ fun MapScreen(
                     state = MarkerState(position = marker.position),
                     title = getToiletNameString(curToilet),
                     icon = getToiletStatusColor(curToilet),
-                    snippet = "${getToiletOpenString(curToilet)}, ${getToiletPriceString(curToilet)} ${getDistanceMeters(mainViewModel.mapState.userPosition, marker.position)}",
+                    snippet = "${getToiletOpenString(curToilet)}, " +
+                            "${getToiletPriceString(curToilet)}, " +
+                            getToiletDistanceString(
+                        getToiletDistanceMeters(mainViewModel.mapState.userPosition, marker.position)
+                    ),
                     onInfoWindowClick = {mainViewModel.navigateToDetails(curToilet, CurrentDetailsScreen.MAP)}
                 )
             }

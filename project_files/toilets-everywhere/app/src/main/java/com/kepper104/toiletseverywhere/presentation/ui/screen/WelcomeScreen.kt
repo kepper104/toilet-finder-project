@@ -32,8 +32,6 @@ fun WelcomeScreen() {
     )
 
 
-
-
     // TODO proper permission management: if declined, whatever
     if (!locationPermissionState.status.isGranted) {
         LaunchedEffect(key1 = true){

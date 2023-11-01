@@ -10,7 +10,6 @@ import androidx.compose.material.icons.outlined.ViewList
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.kepper104.toiletseverywhere.presentation.MIN_PASSWORD_LENGTH
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.DirectionDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.ListScreenDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.MapScreenDestination
@@ -18,6 +17,7 @@ import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.Setti
 
 const val NOT_LOGGED_IN_STRING = "NOTLOGGEDIN"
 const val APP_LAUNCH_INIT_DELAY = 500L
+const val MIN_PASSWORD_LENGTH = 8
 
 
 enum class RegistrationError (val errorMessage: String){
@@ -57,7 +57,8 @@ enum class Tags(val tag: String){
     RepositoryLogger("RepositoryLogger"),
     CompositionLogger("CompositionLogger"),
     NavigationLogger("NavigationLogger"),
-    TempLogger("TempLogger")
+    TempLogger("TempLogger"),
+    NetworkLogger("NetworkLogger")
 
 }
 enum class ToiletIcons(val icon: BitmapDescriptor){
@@ -70,6 +71,8 @@ sealed class ScreenEvent{
     object ToiletAddingEnabledToast: ScreenEvent()
     object ToiletAddingDisabledToast: ScreenEvent()
     object PlaceholderFunction: ScreenEvent()
+    object ToiletCreationFailToast: ScreenEvent()
+    object ToiletCreationSuccessToast: ScreenEvent()
 }
 
 sealed class NavigationEvent{

@@ -59,7 +59,7 @@ fun NewToiletDetailsScreen() {
 
         if (!mainViewModel.newToiletDetailsState.isPublic){
             Text(text = "Name a place in which this toilet is in")
-            Text(text = "Example: Cofix")
+            Text(text = "Example: Toilet in Cofix")
             TextField(
                 value = mainViewModel.newToiletDetailsState.name,
                 onValueChange = {mainViewModel.newToiletDetailsState = mainViewModel.newToiletDetailsState.copy(name = it)},

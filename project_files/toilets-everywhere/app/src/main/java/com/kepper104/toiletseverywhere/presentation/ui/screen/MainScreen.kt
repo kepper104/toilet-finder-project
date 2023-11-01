@@ -42,7 +42,7 @@ fun MainScreen(
 
     val isLoggedInFlowChecker = mainViewModel.isLoggedInFlow.collectAsState(initial = null)
 
-    LaunchedEffect(key1 = Unit){
+    LaunchedEffect(key1 = mainViewModel.loggedInUserState.isLoggedIn){
         Log.d(Tags.NavigationLogger.tag, "Getting navstack ready..")
         while (!isNavStackReady){
             Log.d(Tags.NavigationLogger.tag, "Still not ready...")
