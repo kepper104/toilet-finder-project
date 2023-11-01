@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.data.getToiletOpenString
-import com.kepper104.toiletseverywhere.data.getToiletWorkingHours
+import com.kepper104.toiletseverywhere.data.getToiletWorkingHoursString
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
@@ -99,7 +99,7 @@ fun ToiletCard(toilet: Toilet = Toilet(), navigateToDetails: (toilet: Toilet, so
             AttributeBadge(icon = Icons.Default.Accessible, enabled = toilet.disabledAccess)
             AttributeBadge(icon = Icons.Default.BabyChangingStation, enabled = toilet.babyAccess)
         }
-        Text(text = "Currently ${getToiletOpenString(toilet)} - working hours ${getToiletWorkingHours(toilet)}")
+        Text(text = "Currently ${getToiletOpenString(toilet)} - working hours ${getToiletWorkingHoursString(toilet)}")
         Text(text = if (toilet.cost == 0) "Free" else toilet.cost.toString() + "₽")
         Divider(modifier = Modifier.fillMaxWidth())
     }

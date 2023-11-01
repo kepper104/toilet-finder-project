@@ -30,12 +30,12 @@ import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
 import com.kepper104.toiletseverywhere.data.NavigationEvent
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
+import com.kepper104.toiletseverywhere.data.makeToast
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.ui.screen.NavGraphs
 import com.kepper104.toiletseverywhere.presentation.ui.screen.appCurrentDestinationAsState
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.MapScreenDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.TypedDestination
-import com.kepper104.toiletseverywhere.presentation.ui.screen.makeToast
 import com.kepper104.toiletseverywhere.presentation.ui.screen.startAppDestination
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
 import com.ramcosta.composedestinations.navigation.navigate

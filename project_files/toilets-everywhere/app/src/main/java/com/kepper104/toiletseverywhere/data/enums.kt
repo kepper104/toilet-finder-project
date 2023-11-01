@@ -8,6 +8,8 @@ import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.ViewList
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.google.android.gms.maps.model.BitmapDescriptor
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.kepper104.toiletseverywhere.presentation.MIN_PASSWORD_LENGTH
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.DirectionDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.ListScreenDestination
@@ -58,6 +60,11 @@ enum class Tags(val tag: String){
     TempLogger("TempLogger")
 
 }
+enum class ToiletIcons(val icon: BitmapDescriptor){
+    ToiletRed(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)),
+    ToiletGreen(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
+}
+
 
 sealed class ScreenEvent{
     object ToiletAddingEnabledToast: ScreenEvent()

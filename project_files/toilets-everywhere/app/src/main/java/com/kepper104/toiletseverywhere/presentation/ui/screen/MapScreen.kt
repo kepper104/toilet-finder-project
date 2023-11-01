@@ -19,7 +19,10 @@ import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.data.getDistanceMeters
+import com.kepper104.toiletseverywhere.data.getToiletNameString
 import com.kepper104.toiletseverywhere.data.getToiletOpenString
+import com.kepper104.toiletseverywhere.data.getToiletPriceString
+import com.kepper104.toiletseverywhere.data.getToiletStatusColor
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
 import com.ramcosta.composedestinations.annotation.Destination
@@ -76,32 +79,16 @@ fun MapScreen(
             )
 
 
-            for(marker in mainViewModel.mapState.toiletMarkers){
+            for (marker in mainViewModel.mapState.toiletMarkers){
+                val curToilet = marker.toilet
                 Marker(
                     state = MarkerState(position = marker.position),
-                    title = if (marker.isPublic) "Public toilet" else marker.toilet.placeName,
-                    icon = getToiletIcon(marker.isPublic),
-                    snippet = "${getToiletOpenString(marker.toilet)}, ${getDistanceMeters(mainViewModel.mapState.userPosition, marker.position)}",
-                    onInfoWindowClick = {mainViewModel.navigateToDetails(marker.toilet, CurrentDetailsScreen.MAP)}
+                    title = getToiletNameString(curToilet),
+                    icon = getToiletStatusColor(curToilet),
+                    snippet = "${getToiletOpenString(curToilet)}, ${getToiletPriceString(curToilet)} ${getDistanceMeters(mainViewModel.mapState.userPosition, marker.position)}",
+                    onInfoWindowClick = {mainViewModel.navigateToDetails(curToilet, CurrentDetailsScreen.MAP)}
                 )
             }
         }
     }
-}
-
-
-enum class ToiletIcons(val icon: BitmapDescriptor){
-    ToiletRed(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)),
-    ToiletGreen(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
-}
-
-fun getToiletIcon(isPublic: Boolean): BitmapDescriptor {
-    return if (isPublic){
-        ToiletIcons.ToiletGreen.icon
-    } else {
-        ToiletIcons.ToiletRed.icon
-    }
-}
-fun makeToast(message: String, ctx: Context, length: Int){
-    Toast.makeText(ctx, message, length).show()
 }

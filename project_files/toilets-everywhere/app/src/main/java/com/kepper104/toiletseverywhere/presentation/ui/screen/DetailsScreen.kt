@@ -24,7 +24,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.data.getDistanceMeters
 import com.kepper104.toiletseverywhere.data.getToiletOpenString
-import com.kepper104.toiletseverywhere.data.getToiletWorkingHours
+import com.kepper104.toiletseverywhere.data.getToiletWorkingHoursString
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
@@ -76,7 +76,7 @@ fun DetailsScreen() {
         }
         Text(text = if (toilet.cost == 0) "Free" else "${toilet.cost}₽")
 
-        Text(text = getToiletWorkingHours(toilet, true))
+        Text(text = getToiletWorkingHoursString(toilet, true))
         Text(text = "Currently ${getToiletOpenString(toilet)}")
 
         if (toilet.disabledAccess || toilet.babyAccess || toilet.parkingNearby){

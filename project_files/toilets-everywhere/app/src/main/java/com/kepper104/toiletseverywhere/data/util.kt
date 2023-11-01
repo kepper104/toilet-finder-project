@@ -1,6 +1,9 @@
 package com.kepper104.toiletseverywhere.data
 
+import android.content.Context
 import android.location.Location
+import android.widget.Toast
+import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
 import com.kepper104.toiletseverywhere.domain.model.ApiToilet
 import com.kepper104.toiletseverywhere.domain.model.ApiUser
@@ -102,10 +105,30 @@ fun getToiletOpenString(toilet: Toilet): String {
     return "Closed"
 }
 
-fun getToiletWorkingHours(toilet: Toilet, includeFromTo: Boolean = false): String {
+fun getToiletStatusColor(toilet: Toilet): BitmapDescriptor{
+    if (getToiletOpenString(toilet) == "Open") return ToiletIcons.ToiletGreen.icon
+    else return ToiletIcons.ToiletRed.icon
+
+}
+
+fun getToiletPriceString(toilet: Toilet): String {
+    if (toilet.cost == 0) return "Free"
+    else return "${toilet.cost}₽"
+}
+
+fun getToiletNameString(toilet: Toilet): String{
+    if (toilet.isPublic) return "Public Toilet"
+    else return toilet.placeName
+}
+
+fun getToiletWorkingHoursString(toilet: Toilet, includeFromTo: Boolean = false): String {
     val openingTime = toilet.openingTime.format(timeFormatter1)
     val closingTime = toilet.closingTime.format(timeFormatter1)
 
     if (includeFromTo) return "From $openingTime to $closingTime"
     else return "$openingTime - $closingTime"
+}
+
+fun makeToast(message: String, ctx: Context, length: Int){
+    Toast.makeText(ctx, message, length).show()
 }
