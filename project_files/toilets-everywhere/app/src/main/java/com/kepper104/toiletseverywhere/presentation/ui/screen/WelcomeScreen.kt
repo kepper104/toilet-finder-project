@@ -21,6 +21,10 @@ import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
+/**
+ * TODO
+ *
+ */
 @OptIn(ExperimentalPermissionsApi::class)
 @Destination
 @Composable

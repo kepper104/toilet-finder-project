@@ -40,6 +40,11 @@ import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
 import com.ramcosta.composedestinations.annotation.Destination
 
+
+/**
+ * TODO
+ *
+ */
 @Destination
 @Composable
 fun ListScreen(
@@ -78,6 +83,14 @@ fun ListScreen(
         }
     }
 }
+
+/**
+ * TODO
+ *
+ * @param toilet
+ * @param navigateToDetails
+ * @param distanceToToilet
+ */
 @Preview
 @Composable
 fun ToiletCard(toilet: Toilet = Toilet(), navigateToDetails: (toilet: Toilet, source: CurrentDetailsScreen) -> Unit = ::placeHolderFunc, distanceToToilet: Int = 100) {
@@ -112,10 +125,22 @@ fun ToiletCard(toilet: Toilet = Toilet(), navigateToDetails: (toilet: Toilet, so
 
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @param source
+ */
 fun placeHolderFunc(toilet: Toilet, source: CurrentDetailsScreen): Unit {
 
 }
 
+/**
+ * TODO
+ *
+ * @param icon
+ * @param enabled
+ */
 @Composable
 fun AttributeBadge(icon: ImageVector, enabled: Boolean) {
     Icon(

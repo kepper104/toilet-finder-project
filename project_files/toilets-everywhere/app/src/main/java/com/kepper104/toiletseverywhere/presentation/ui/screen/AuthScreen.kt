@@ -27,6 +27,13 @@ import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
+
+/**
+ * TODO
+ *
+ * @param navigator
+ * @param mainViewModel
+ */
 @Destination
 @Composable
 fun AuthScreen(
@@ -49,6 +56,12 @@ fun AuthScreen(
     }
 }
 
+/**
+ * TODO
+ *
+ * @param navigator
+ * @param vm
+ */
 @Composable
 fun AuthScreenMain(navigator: DestinationsNavigator, vm: MainViewModel) {
     Column(
@@ -130,6 +143,13 @@ fun AuthScreenMain(navigator: DestinationsNavigator, vm: MainViewModel) {
 
     }
 }
+
+/**
+ * TODO
+ *
+ * @param navigator
+ * @param vm
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreenLogin(navigator: DestinationsNavigator, vm: MainViewModel) {
@@ -197,6 +217,13 @@ fun AuthScreenLogin(navigator: DestinationsNavigator, vm: MainViewModel) {
     }
 
 }
+
+/**
+ * TODO
+ *
+ * @param navigator
+ * @param vm
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AuthScreenRegister(navigator: DestinationsNavigator, vm: MainViewModel) {

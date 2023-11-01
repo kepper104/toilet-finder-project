@@ -8,6 +8,10 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 import retrofit2.http.Path
 
+/**
+ * TODO
+ *
+ */
 interface MainApi {
 
     @GET("/toilets")
@@ -33,27 +37,57 @@ interface MainApi {
 
 }
 
+/**
+ * TODO
+ *
+ * @property login
+ * @property password
+ */
 data class LoginData(
     val login: String,
     val password: String
 )
 
+/**
+ * TODO
+ *
+ * @property login
+ * @property password
+ * @property display_name
+ */
 data class RegisterData(
     val login: String,
     val password: String,
     val display_name: String
 )
 
+/**
+ * TODO
+ *
+ * @property id_
+ * @property display_name_
+ * @property creation_date_
+ */
 data class LoginResponse(
     val id_: Int,
     val display_name_: String,
     val creation_date_: String
 )
 
+/**
+ * TODO
+ *
+ * @property UserExists
+ */
 data class LoginCheckResponse(
     val UserExists: Boolean
 )
 
+/**
+ * TODO
+ *
+ * @property Message
+ */
 data class MessageResponse(
     val Message: String
 )

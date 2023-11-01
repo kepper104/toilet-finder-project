@@ -3,6 +3,10 @@ package com.kepper104.toiletseverywhere.presentation.ui.state
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
 import com.kepper104.toiletseverywhere.data.RegistrationError
 
+/**
+ * TODO
+ *
+ */
 data class AuthState(
     val status: AuthUiStatus = AuthUiStatus.MAIN,
     val registerLogin: String = "",

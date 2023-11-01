@@ -18,6 +18,14 @@ val dateFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 val timeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm:ss")
 val timeFormatter1: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
 
+// TODO chop this file into several, get rid of one general 'util' file
+
+/**
+ * TODO
+ *
+ * @param apiToilet
+ * @return
+ */
 fun fromApiToilet(apiToilet: ApiToilet): Toilet{
 
     val values = apiToilet.coordinates_.trim('(', ')').split(',')
@@ -49,6 +57,12 @@ fun fromApiToilet(apiToilet: ApiToilet): Toilet{
     )
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @return
+ */
 fun toApiToilet(toilet: Toilet): ApiToilet{
     val openingTime = toilet.openingTime.format(timeFormatter1)
     val closingTime = toilet.closingTime.format(timeFormatter1)
@@ -69,6 +83,12 @@ fun toApiToilet(toilet: Toilet): ApiToilet{
     )
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @return
+ */
 fun toToiletMarker(toilet: Toilet): ToiletMarker{
     return ToiletMarker(
         id = toilet.id,
@@ -79,6 +99,12 @@ fun toToiletMarker(toilet: Toilet): ToiletMarker{
     )
 }
 
+/**
+ * TODO
+ *
+ * @param apiUser
+ * @return
+ */
 fun fromApiUser(apiUser: ApiUser): User{
     val creationDate: LocalDate = LocalDate.parse(apiUser.creation_date_, dateFormatter)
 
@@ -89,6 +115,13 @@ fun fromApiUser(apiUser: ApiUser): User{
     )
 }
 
+/**
+ * TODO
+ *
+ * @param userPosition
+ * @param toiletPosition
+ * @return
+ */
 fun getToiletDistanceMeters(userPosition: LatLng, toiletPosition: LatLng): Int {
     val res = FloatArray(10)
     Location.distanceBetween(
@@ -101,11 +134,23 @@ fun getToiletDistanceMeters(userPosition: LatLng, toiletPosition: LatLng): Int {
     return res[0].toInt()
 }
 
+/**
+ * TODO
+ *
+ * @param distanceMeters
+ * @return
+ */
 fun getToiletDistanceString(distanceMeters: Int): String{
     return if (distanceMeters < 1000) distanceMeters.toString() + "m"
     else (distanceMeters / 1000).toString() + "km"
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @return
+ */
 fun getToiletOpenString(toilet: Toilet): String {
     val currentTime = LocalTime.now()
     if (toilet.openingTime <= currentTime &&  currentTime <= toilet.closingTime){
@@ -114,22 +159,47 @@ fun getToiletOpenString(toilet: Toilet): String {
     return "Closed"
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @return
+ */
 fun getToiletStatusColor(toilet: Toilet): BitmapDescriptor{
     if (getToiletOpenString(toilet) == "Open") return ToiletIcons.ToiletGreen.icon
     else return ToiletIcons.ToiletRed.icon
 
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @return
+ */
 fun getToiletPriceString(toilet: Toilet): String {
     if (toilet.cost == 0) return "Free"
     else return "${toilet.cost}₽"
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @return
+ */
 fun getToiletNameString(toilet: Toilet): String{
     if (toilet.isPublic) return "Public Toilet"
     else return toilet.placeName
 }
 
+/**
+ * TODO
+ *
+ * @param toilet
+ * @param includeFromTo
+ * @return
+ */
 fun getToiletWorkingHoursString(toilet: Toilet, includeFromTo: Boolean = false): String {
     val openingTime = toilet.openingTime.format(timeFormatter1)
     val closingTime = toilet.closingTime.format(timeFormatter1)
@@ -138,6 +208,13 @@ fun getToiletWorkingHoursString(toilet: Toilet, includeFromTo: Boolean = false):
     else return "$openingTime - $closingTime"
 }
 
+/**
+ * TODO
+ *
+ * @param message
+ * @param ctx
+ * @param length
+ */
 fun makeToast(message: String, ctx: Context, length: Int){
     Toast.makeText(ctx, message, length).show()
 }

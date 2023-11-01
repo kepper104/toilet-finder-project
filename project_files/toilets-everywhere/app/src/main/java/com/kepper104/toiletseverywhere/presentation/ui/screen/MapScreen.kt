@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
@@ -25,6 +26,10 @@ import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScree
 import com.ramcosta.composedestinations.annotation.Destination
 
 
+/**
+ * TODO
+ *
+ */
 @Destination
 @Composable
 fun MapScreen(
@@ -72,7 +77,8 @@ fun MapScreen(
 
             Marker(
                 state = MarkerState(position = mainViewModel.mapState.cameraPosition.position.target),
-                visible = mainViewModel.mapState.addingToilet
+                visible = mainViewModel.mapState.addingToilet,
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)
             )
 
 

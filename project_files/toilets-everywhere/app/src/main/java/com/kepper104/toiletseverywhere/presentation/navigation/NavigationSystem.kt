@@ -43,9 +43,14 @@ import com.ramcosta.composedestinations.navigation.popBackStack
 import com.ramcosta.composedestinations.navigation.popUpTo
 import com.ramcosta.composedestinations.utils.isRouteOnBackStack
 
-
+// TODO maybe move to utils
 val destinationToDetailScreenMapping = mapOf(CurrentDetailsScreen.MAP to BottomBarDestination.MapView, CurrentDetailsScreen.LIST to BottomBarDestination.ListView)
 
+/**
+ * TODO
+ *
+ * @param navController
+ */
 @Composable
 fun BottomNavigationBar(
     navController: NavHostController,
@@ -95,6 +100,13 @@ fun BottomNavigationBar(
 
 }
 
+/**
+ * TODO
+ *
+ * @param navController
+ * @param bottomBar
+ * @param content
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavScaffold(
@@ -115,6 +127,10 @@ fun NavScaffold(
     )
 }
 
+/**
+ * TODO
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapTopAppBar() {
@@ -229,6 +245,13 @@ fun MapTopAppBar() {
         }
     )
 }
+
+/**
+ * TODO
+ *
+ * @param viewModel
+ * @param composeContext
+ */
 @Composable
 fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
     LaunchedEffect(key1 = true) {
@@ -257,6 +280,12 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
     }
 }
 
+/**
+ * TODO
+ *
+ * @param viewModel
+ * @param navController
+ */
 @Composable
 fun HandleNavigationEvents(viewModel: MainViewModel, navController: NavHostController) {
     LaunchedEffect(key1 = true) {

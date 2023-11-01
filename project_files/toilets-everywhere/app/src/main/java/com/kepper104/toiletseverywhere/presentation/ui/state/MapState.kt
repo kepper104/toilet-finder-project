@@ -8,6 +8,11 @@ import com.google.maps.android.compose.MapUiSettings
 import com.google.maps.android.compose.MarkerState
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 
+/**
+ * TODO
+ *
+ *
+ */
 data class MapState (
     val properties: MapProperties = MapProperties(isMyLocationEnabled = false),
     val cameraPosition: CameraPositionState = CameraPositionState(CameraPosition(LatLng(55.80344037191546, 37.409658491929854), 10F, 0F, 0F)),
@@ -18,6 +23,11 @@ data class MapState (
     val mapUiSettings: MapUiSettings = MapUiSettings()
 )
 
+/**
+ * TODO
+ *
+ *
+ */
 data class ToiletMarker(
     val id: Int = 0,
     val position: LatLng = LatLng(0.0, 0.0),

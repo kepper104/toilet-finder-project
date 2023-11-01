@@ -14,6 +14,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
+
+/**
+ * TODO
+ *
+ */
 @Destination
 @Composable
 fun SettingsScreen(

@@ -28,7 +28,10 @@ import com.kepper104.toiletseverywhere.data.getToiletWorkingHoursString
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
 
-@Preview
+/**
+ * TODO
+ *
+ */
 @Destination
 @Composable
 fun DetailsScreen() {

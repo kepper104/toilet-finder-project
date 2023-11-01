@@ -1,5 +1,9 @@
 package com.kepper104.toiletseverywhere.domain.model
 
+/**
+ * TODO
+ *
+ */
 class LocalUser {
     var id: Int = 0
     var isLoggedIn: Boolean = false

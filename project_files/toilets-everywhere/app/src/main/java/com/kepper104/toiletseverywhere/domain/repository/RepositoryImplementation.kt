@@ -25,6 +25,12 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+/**
+ * TODO
+ *
+ * @property mainApi
+ * @property dataStore
+ */
 @OptIn(DelicateCoroutinesApi::class)
 class RepositoryImplementation (
     private val mainApi: MainApi,
@@ -35,6 +41,7 @@ class RepositoryImplementation (
 
     override var loginStatus: LoginStatus = LoginStatus.None
 
+
     init {
         GlobalScope.launch {
             refreshCurrentUser()
@@ -42,6 +49,11 @@ class RepositoryImplementation (
     }
 
 
+    /**
+     * TODO
+     *
+     * @return
+     */
     override suspend fun retrieveToilets(): List<Toilet>? {
         Log.d(Tags.TempLogger.tag, "Retrieving toilets")
         try{
@@ -58,6 +70,12 @@ class RepositoryImplementation (
         return null
     }
 
+    /**
+     * TODO
+     *
+     * @param id
+     * @return
+     */
     override suspend fun retrieveToiletById(id: Int): Toilet? {
         Log.d(Tags.TempLogger.tag, "Retrieving toilet by id")
 
@@ -74,6 +92,12 @@ class RepositoryImplementation (
         return null
     }
 
+    /**
+     * TODO
+     *
+     * @param id
+     * @return
+     */
     override suspend fun retrieveUserById(id: Int): User? {
         Log.d(Tags.TempLogger.tag, "Retrieving user by id")
 
@@ -90,6 +114,11 @@ class RepositoryImplementation (
         return null
     }
 
+    /**
+     * TODO
+     *
+     * @param toilet
+     */
     override suspend fun createToilet(toilet: Toilet) {
         Log.d(Tags.TempLogger.tag, "Creating toilet")
 
@@ -107,6 +136,12 @@ class RepositoryImplementation (
         }
     }
 
+    /**
+     * TODO
+     *
+     * @param id
+     * @return
+     */
     private suspend fun retrieveUsernameById(id: Int): String{
         Log.d(Tags.TempLogger.tag, "Retrieving username by id")
 
@@ -117,6 +152,13 @@ class RepositoryImplementation (
     }
 
 
+    /**
+     * TODO
+     *
+     * @param login
+     * @param password
+     * @return
+     */
     private suspend fun checkLogin(login: String, password: String): LoginResponse? {
         Log.d(Tags.TempLogger.tag, "Checking login")
 
@@ -139,7 +181,12 @@ class RepositoryImplementation (
     }
 
 
-
+    /**
+     * TODO
+     *
+     * @param login
+     * @param password
+     */
     override suspend fun login(login: String, password: String) {
         Log.d(Tags.TempLogger.tag, "Logging in")
 
@@ -159,12 +206,23 @@ class RepositoryImplementation (
     }
 
 
+    /**
+     * TODO
+     *
+     */
     override suspend fun logout() {
         Log.d(Tags.TempLogger.tag, "Logging out")
 
         clearDataStore()
     }
 
+    /**
+     * TODO
+     *
+     * @param login
+     * @param password
+     * @param displayName
+     */
     override suspend fun register(login: String, password: String, displayName: String) {
         Log.d(Tags.TempLogger.tag, "Registering")
 
@@ -184,6 +242,10 @@ class RepositoryImplementation (
     }
 
 
+    /**
+     * TODO
+     *
+     */
     override suspend fun continueWithoutLogin() {
         Log.d(Tags.TempLogger.tag, "Logging in anonymously")
 
@@ -191,6 +253,12 @@ class RepositoryImplementation (
         saveDataStore(isLoggedIn = true)
     }
 
+    /**
+     * TODO
+     *
+     * @param login
+     * @return
+     */
     override suspend fun checkIfLoginExists(login: String): Boolean? {
         Log.d(Tags.TempLogger.tag, "Checking login availability")
 
@@ -204,6 +272,14 @@ class RepositoryImplementation (
 
     }
 
+    /**
+     * TODO
+     *
+     * @param id
+     * @param isLoggedIn
+     * @param displayName
+     * @param creationDate
+     */
     private suspend fun saveDataStore(
         id: Int? = null,
         isLoggedIn: Boolean? = null,
@@ -245,6 +321,10 @@ class RepositoryImplementation (
 
     }
 
+    /**
+     * TODO
+     *
+     */
     private suspend fun clearDataStore(){
         dataStore.edit {
             it[intPreferencesKey("id")] = 0
@@ -265,7 +345,10 @@ class RepositoryImplementation (
 
     }
 
-
+    /**
+     * TODO
+     *
+     */
     private suspend fun refreshCurrentUser(){
         val id = dataStore.data.first()[intPreferencesKey("id")] ?: 0
         val isLoggedIn = dataStore.data.first()[booleanPreferencesKey("isLoggedIn")] ?: false

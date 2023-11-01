@@ -4,6 +4,10 @@ import com.google.android.gms.maps.model.LatLng
 import java.time.LocalDate
 import java.time.LocalTime
 
+/**
+ * TODO
+ *
+ */
 data class NewToiletDetailsState(
     val enabled: Boolean = false,
     val coordinates: LatLng = LatLng(0.0, 0.0),

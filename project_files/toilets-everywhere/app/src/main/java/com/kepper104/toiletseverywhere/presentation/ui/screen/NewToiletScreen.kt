@@ -32,6 +32,10 @@ import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 
+/**
+ * TODO
+ *
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewToiletDetailsScreen() {
@@ -110,6 +114,11 @@ fun NewToiletDetailsScreen() {
 
 }
 
+/**
+ * TODO
+ *
+ * @param vm
+ */
 @Composable
 fun TimePickers(vm: MainViewModel) {
     val formattedOpeningTime by remember {

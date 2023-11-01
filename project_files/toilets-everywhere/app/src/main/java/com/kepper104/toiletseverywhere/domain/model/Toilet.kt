@@ -4,6 +4,11 @@ import com.google.android.gms.maps.model.LatLng
 import java.time.LocalDate
 import java.time.LocalTime
 
+/**
+ * TODO
+ *
+ *
+ */
 data class Toilet(
     val id: Int = 0,
     val authorId: Int = 0,

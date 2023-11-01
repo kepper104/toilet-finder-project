@@ -1,14 +1,12 @@
 package com.kepper104.toiletseverywhere.presentation
 
 import android.util.Log
-import android.widget.Toast
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.NavHostController
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
@@ -26,7 +24,6 @@ import com.kepper104.toiletseverywhere.data.getToiletDistanceMeters
 import com.kepper104.toiletseverywhere.data.toToiletMarker
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.repository.Repository
-import com.kepper104.toiletseverywhere.presentation.ui.screen.NavGraphs
 import com.kepper104.toiletseverywhere.presentation.ui.state.AuthState
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
 import com.kepper104.toiletseverywhere.presentation.ui.state.LoggedInUserState
@@ -35,9 +32,6 @@ import com.kepper104.toiletseverywhere.presentation.ui.state.NavigationState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NewToiletDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletViewDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletsState
-import com.ramcosta.composedestinations.navigation.navigate
-import com.ramcosta.composedestinations.navigation.popBackStack
-import com.ramcosta.composedestinations.navigation.popUpTo
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -49,6 +43,9 @@ import java.time.LocalTime
 import javax.inject.Inject
 
 
+/**
+ * The only viewmodel in project, handles communicating data between Repository and UI
+ */
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val repository: Repository
@@ -114,6 +111,9 @@ class MainViewModel @Inject constructor(
     }
 
 
+    /**
+     * Open map view and move and zoom camera to selected [toilet] location
+     */
     fun moveCameraToToiletLocation(toilet: Toilet){
         mapState = mapState.copy(cameraPosition = CameraPositionState(CameraPosition(toilet.coordinates, 17F, 0F, 0F)))
         leaveToiletViewDetailsScreen()
@@ -123,7 +123,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    
+    /**
+     * Create a new toilet from input data, publish it to repository,
+     * clear input fields, show a toast with creation result
+     */
     fun createToilet(){
         val toilet = Toilet(
             id = 0,
@@ -161,6 +164,9 @@ class MainViewModel @Inject constructor(
     }
 
 
+    /**
+     * Emit a given [event] to eventFlow to then be collected and handled from UI
+     */
     fun triggerEvent(event: ScreenEvent){
         viewModelScope.launch {
             _eventFlow.emit(event)
@@ -168,6 +174,9 @@ class MainViewModel @Inject constructor(
     }
 
 
+    /**
+     * Enable showing user location on the map using given [locationProviderClient]
+     */
     fun enableLocationServices(locationProviderClient: FusedLocationProviderClient){
         mapState = mapState.copy(properties = MapProperties(isMyLocationEnabled = true))
         locationClient = locationProviderClient
@@ -194,6 +203,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Enable refreshing cached user position every 5 seconds
+     */
     fun startLocationRefreshCycle() {
         viewModelScope.launch {
             while (true) {
@@ -203,6 +215,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Refresh currently remembered user location
+     */
     private fun refreshUserLocation(){
         try{
             Log.d(Tags.MainViewModelTag.toString(), "Getting position on location refresh")
@@ -221,6 +236,9 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Set internal current navbar destination to [newDestination]
+     */
     fun changeNavigationState(newDestination: BottomBarDestination){
         navigationState = navigationState.copy(currentDestination = newDestination)
 
@@ -233,6 +251,9 @@ class MainViewModel @Inject constructor(
     }
 
 
+    /**
+     * Start listening to loginFlow from repository and modify UI login fields accordingly
+     */
     private fun collectLoginStatusFlow(){
         viewModelScope.launch {
             loginStatusFlow.collect {loginStatus ->
@@ -254,14 +275,21 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    private fun saveLoggedInUser(isLoggedIn: Boolean, newUserName: String){
-        Log.d(Tags.MainViewModelTag.toString(), "Saving user data to vm: $isLoggedIn, $newUserName")
+    /**
+     * Write if user is currently [isLoggedIn] and their [newUsername] into loggedInUserState
+     */
+    private fun saveLoggedInUser(isLoggedIn: Boolean, newUsername: String){
+        Log.d(Tags.MainViewModelTag.toString(), "Saving user data to vm: $isLoggedIn, $newUsername")
         loggedInUserState = loggedInUserState.copy(
             isLoggedIn = isLoggedIn,
-            currentUserName = newUserName
+            currentUserName = newUsername
         )
     }
 
+    /**
+     * TODO
+     *
+     */
     fun getLatestToilets(){
         Log.d(Tags.MainViewModelTag.toString(), "Getting latest toilets")
 
@@ -284,6 +312,10 @@ class MainViewModel @Inject constructor(
 
     }
 
+    /**
+     * TODO
+     *
+     */
     fun navigateToDetails(toilet: Toilet, source: CurrentDetailsScreen){
         viewModelScope.launch {
             Log.d(Tags.MainViewModelTag.toString(), "Opening details: ${toilet.id}, $source")
@@ -299,18 +331,30 @@ class MainViewModel @Inject constructor(
     }
 
 
+    /**
+     * TODO
+     *
+     */
     fun leaveToiletViewDetailsScreen(){
         Log.d(Tags.MainViewModelTag.toString(), "Leaving details screen")
         toiletViewDetailsState = toiletViewDetailsState.copy(toilet = null, currentDetailScreen = CurrentDetailsScreen.NONE)
         Log.d(Tags.MainViewModelTag.toString(), "Left details: $toiletViewDetailsState")
     }
 
+    /**
+     * TODO
+     *
+     */
     fun leaveNewToiletDetailsScreen(){
         newToiletDetailsState = newToiletDetailsState.copy(
             enabled = false
         )
     }
 
+    /**
+     * TODO
+     *
+     */
     fun navigateToNewToiletDetailsScreen(){
         Log.d(Tags.MainViewModelTag.toString(), mapState.newToiletMarkerState.toString())
         newToiletDetailsState = newToiletDetailsState.copy(
@@ -318,6 +362,10 @@ class MainViewModel @Inject constructor(
             coordinates = mapState.cameraPosition.position.target
         )
     }
+    /**
+     * TODO
+     *
+     */
     private fun refreshToiletMarkers(){
         Log.d(Tags.MainViewModelTag.toString(), "Refreshing toilets")
         var toiletList = toiletsState.toiletList.map { toilet ->  toToiletMarker(toilet)}
@@ -325,15 +373,19 @@ class MainViewModel @Inject constructor(
         mapState = mapState.copy(toiletMarkers = toiletList)
     }
 
-    fun navigateBackButton(){
-        Log.d(Tags.MainViewModelTag.toString(), "Navigating back")
-    }
-
+    /**
+     * TODO
+     *
+     */
     fun placeholder(){
         triggerEvent(ScreenEvent.PlaceholderFunction)
     }
 
 
+    /**
+     * TODO
+     *
+     */
     fun login() {
         val login = authState.loginLogin
         val password = authState.loginPassword
@@ -343,6 +395,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * TODO
+     *
+     */
     fun logout(){
         viewModelScope.launch {
             repository.logout()
@@ -350,6 +406,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * TODO
+     *
+     */
     fun clearAuthState(){
         authState = authState.copy(
             status = AuthUiStatus.MAIN,
@@ -364,6 +424,10 @@ class MainViewModel @Inject constructor(
         )
     }
 
+    /**
+     * TODO
+     *
+     */
     private suspend fun registerUser(res: RegistrationError?){
         authState = authState.copy(registrationError = res)
 
@@ -372,6 +436,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * TODO
+     *
+     */
     fun startRegister(){
         viewModelScope.launch {
             val error = validateRegistrationData()
@@ -381,6 +449,10 @@ class MainViewModel @Inject constructor(
     }
 
 
+    /**
+     * TODO
+     *
+     */
     private suspend fun validateRegistrationData(): RegistrationError? {
         val password = authState.registerPassword
         val login = authState.registerLogin
@@ -426,17 +498,31 @@ class MainViewModel @Inject constructor(
         return null
     }
 
+    /**
+     * TODO
+     *
+     */
     fun continueWithoutAccount(){
         viewModelScope.launch {
             repository.continueWithoutLogin()
         }
     }
+
+    /**
+     * TODO
+     *
+     */
     private fun checkForNumbers(str: String): Boolean {
         for (char in str){
             if (char.isDigit()) return true
         }
         return false
     }
+
+    /**
+     * TODO
+     *
+     */
     private fun checkForUpperCase(str: String): Boolean {
         for (char in str){
             if (char.isUpperCase()) return true
@@ -444,6 +530,10 @@ class MainViewModel @Inject constructor(
         return false
     }
 
+    /**
+     * TODO
+     *
+     */
     private fun checkForLowerCase(str: String): Boolean {
         for (char in str){
             if (char.isLowerCase()) return true
@@ -451,14 +541,26 @@ class MainViewModel @Inject constructor(
         return false
     }
 
+    /**
+     * TODO
+     *
+     */
     fun setPadding(paddingValues: PaddingValues){
         scaffoldPadding = paddingValues
     }
 
+    /**
+     * TODO
+     *
+     */
     fun setAuthStatus(status: AuthUiStatus){
         authState = authState.copy(status = status)
     }
 
+    /**
+     * TODO
+     *
+     */
     fun getToilets(){
         viewModelScope.launch {
             val toilets = repository.retrieveToilets()
@@ -467,6 +569,11 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    /**
+     * TODO
+     *
+     */
     fun getToiletById(id: Int){
         viewModelScope.launch {
             val toilet = repository.retrieveToiletById(id)
@@ -474,5 +581,4 @@ class MainViewModel @Inject constructor(
             Log.d("ToiletLogger", toilet.toString())
         }
     }
-
 }

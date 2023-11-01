@@ -1,5 +1,10 @@
 package com.kepper104.toiletseverywhere.domain.model
 
+/**
+ * TODO
+ *
+ *
+ */
 data class ApiToilet (
     val id_: Int = 0,
     val author_id_: Int = 0,

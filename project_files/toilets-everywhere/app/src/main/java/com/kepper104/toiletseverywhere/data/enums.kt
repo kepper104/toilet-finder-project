@@ -15,11 +15,17 @@ import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.ListS
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.MapScreenDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.SettingsScreenDestination
 
+// Constants
 const val NOT_LOGGED_IN_STRING = "NOTLOGGEDIN"
 const val APP_LAUNCH_INIT_DELAY = 500L
 const val MIN_PASSWORD_LENGTH = 8
 
 
+/**
+ * TODO
+ *
+ * @property errorMessage
+ */
 enum class RegistrationError (val errorMessage: String){
     PASSWORD_TOO_SHORT ("Password must be at least $MIN_PASSWORD_LENGTH symbols!"),
     PASSWORD_CONTAINS_NO_UPPERCASE("Password must contain at least 1 capital letter!"),
@@ -32,10 +38,23 @@ enum class RegistrationError (val errorMessage: String){
     LOGIN_ALREADY_TAKEN ("Login is already taken!"),
     NETWORK_ERROR ("Network Error!")
 }
+
+/**
+ * TODO
+ *
+ */
 enum class LoginStatus{
     None, Success, Fail, Processing
 }
 
+/**
+ * TODO
+ *
+ * @property direction
+ * @property iconUnselected
+ * @property iconSelected
+ * @property label
+ */
 enum class BottomBarDestination(
     val direction: DirectionDestination,
     val iconUnselected: ImageVector,
@@ -48,10 +67,19 @@ enum class BottomBarDestination(
 }
 
 
+/**
+ * TODO
+ *
+ */
 enum class AuthUiStatus {
     MAIN, REGISTER, LOGIN
 }
 
+/**
+ * TODO
+ *
+ * @property tag
+ */
 enum class Tags(val tag: String){
     MainViewModelTag("ViewModelLogger"),
     RepositoryLogger("RepositoryLogger"),
@@ -61,12 +89,21 @@ enum class Tags(val tag: String){
     NetworkLogger("NetworkLogger")
 
 }
+
+/**
+ * TODO
+ *
+ * @property icon
+ */
 enum class ToiletIcons(val icon: BitmapDescriptor){
     ToiletRed(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)),
     ToiletGreen(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN))
 }
 
-
+/**
+ * TODO
+ *
+ */
 sealed class ScreenEvent{
     object ToiletAddingEnabledToast: ScreenEvent()
     object ToiletAddingDisabledToast: ScreenEvent()
@@ -75,6 +112,10 @@ sealed class ScreenEvent{
     object ToiletCreationSuccessToast: ScreenEvent()
 }
 
+/**
+ * TODO
+ *
+ */
 sealed class NavigationEvent{
     object NavigateToMap: NavigationEvent()
     object NavigateToList: NavigationEvent()

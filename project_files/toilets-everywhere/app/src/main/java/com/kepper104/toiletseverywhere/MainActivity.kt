@@ -20,6 +20,10 @@ import dagger.hilt.android.AndroidEntryPoint
 val Context.dataStore by preferencesDataStore(name = "auth")
 var isNavStackReady = false
 
+/**
+ * TODO
+ *
+ */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
