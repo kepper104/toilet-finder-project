@@ -5,6 +5,7 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowBack
@@ -12,6 +13,9 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -23,6 +27,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
@@ -227,9 +232,11 @@ fun MapTopAppBar() {
                     Log.d(Tags.CompositionLogger.toString(), "NOT Showing Add Toilet button")
 
                 }
-                IconButton(onClick = { mainViewModel.placeholder() }) {
+                IconButton(onClick = { mainViewModel.toggleToiletFilterMenu() }) {
                     Icon(imageVector = Icons.Default.FilterAlt, contentDescription = "Filter toilets")
                 }
+                FilterDropdownMenu(vm = mainViewModel)
+
                 IconButton(onClick = { mainViewModel.getLatestToilets() }) {
                     Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh toilets")
                 }
@@ -304,5 +311,31 @@ fun HandleNavigationEvents(viewModel: MainViewModel, navController: NavHostContr
                 NavigationEvent.NavigateToSettings -> viewModel.placeholder()
             }
         }
+    }
+}
+
+/**
+ * TODO
+ *
+ */
+@Composable
+fun FilterDropdownMenu(vm: MainViewModel) {
+    DropdownMenu(
+        expanded = vm.filterState.isMenuShown,
+        onDismissRequest = { vm.filterState = vm.filterState.copy(isMenuShown = false) }) {
+
+        Row{
+            Text(text = "Filters")
+        }
+        Row{
+            Text(text = "Public")
+            Checkbox(checked = vm.filterState.isPublic, onCheckedChange = {vm.updateToiletFilters(vm.filterState.copy(isPublic = !vm.filterState.isPublic))})
+        }
+
+        Row{
+            Text(text = "Checkbox 2")
+            Checkbox(checked = false, onCheckedChange = {})
+        }
+
     }
 }

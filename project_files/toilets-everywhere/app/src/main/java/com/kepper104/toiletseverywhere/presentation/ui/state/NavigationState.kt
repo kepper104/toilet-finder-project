@@ -8,5 +8,5 @@ import com.kepper104.toiletseverywhere.data.BottomBarDestination
  * @property currentDestination
  */
 data class NavigationState (
-    val currentDestination: BottomBarDestination? = null
+    val currentDestination: BottomBarDestination? = null,
 )

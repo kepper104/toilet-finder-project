@@ -121,3 +121,11 @@ sealed class NavigationEvent{
     object NavigateToList: NavigationEvent()
     object NavigateToSettings: NavigationEvent()
 }
+
+/**
+ * TODO
+ *
+ */
+enum class ChangedFilterOption{
+    IsPublic, DisabledAccess,
+}

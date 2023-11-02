@@ -21,11 +21,13 @@ import com.kepper104.toiletseverywhere.data.RegistrationError
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.data.getToiletDistanceMeters
+import com.kepper104.toiletseverywhere.data.getToiletOpenString
 import com.kepper104.toiletseverywhere.data.toToiletMarker
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.repository.Repository
 import com.kepper104.toiletseverywhere.presentation.ui.state.AuthState
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
+import com.kepper104.toiletseverywhere.presentation.ui.state.FilterState
 import com.kepper104.toiletseverywhere.presentation.ui.state.LoggedInUserState
 import com.kepper104.toiletseverywhere.presentation.ui.state.MapState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NavigationState
@@ -58,6 +60,7 @@ class MainViewModel @Inject constructor(
     var navigationState by mutableStateOf(NavigationState())
     var loggedInUserState by mutableStateOf(LoggedInUserState())
     var newToiletDetailsState by mutableStateOf(NewToiletDetailsState())
+    var filterState by mutableStateOf(FilterState())
 
     private val _eventFlow = MutableSharedFlow<ScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -111,6 +114,23 @@ class MainViewModel @Inject constructor(
     }
 
 
+    fun toggleToiletFilterMenu(){
+        filterState = filterState.copy(isMenuShown = !filterState.isMenuShown)
+    }
+    fun updateToiletFilters(newFilterState: FilterState){
+        val isPublic = newFilterState.isPublic
+        val disabledAccess = newFilterState.disabledAccess
+        val babyAccess = newFilterState.babyAccess
+        val parkingNearby = newFilterState.parkingNearby
+        val currentlyOpen = newFilterState.currentlyOpen
+        val isFree = newFilterState.isFree
+
+        val filteredToiletList = toiletsState.toiletList.filter {
+            it.isPublic == isPublic && it.disabledAccess == disabledAccess && it.babyAccess == babyAccess && it.parkingNearby == parkingNearby && (if (isFree) it.cost == 0 else it.cost != 0) && (if (currentlyOpen) getToiletOpenString(it) == "Open" else getToiletOpenString(it) == "Closed")
+        }
+
+        filterState = filterState.copy(filteredToilets = filteredToiletList)
+    }
     /**
      * Open map view and move and zoom camera to selected [toilet] location
      */
