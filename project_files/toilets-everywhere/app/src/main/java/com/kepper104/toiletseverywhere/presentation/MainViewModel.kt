@@ -114,9 +114,19 @@ class MainViewModel @Inject constructor(
     }
 
 
+    /**
+     * TODO
+     *
+     */
     fun toggleToiletFilterMenu(){
         filterState = filterState.copy(isMenuShown = !filterState.isMenuShown)
     }
+
+    /**
+     * TODO
+     *
+     * @param newFilterState
+     */
     fun updateToiletFilters(newFilterState: FilterState){
         val isPublic = newFilterState.isPublic
         val disabledAccess = newFilterState.disabledAccess
@@ -126,11 +136,21 @@ class MainViewModel @Inject constructor(
         val isFree = newFilterState.isFree
 
         val filteredToiletList = toiletsState.toiletList.filter {
-            it.isPublic == isPublic && it.disabledAccess == disabledAccess && it.babyAccess == babyAccess && it.parkingNearby == parkingNearby && (if (isFree) it.cost == 0 else it.cost != 0) && (if (currentlyOpen) getToiletOpenString(it) == "Open" else getToiletOpenString(it) == "Closed")
+            (if (isPublic) it.isPublic else true) &&
+            (if (disabledAccess) it.disabledAccess else true) &&
+            (if (babyAccess) it.babyAccess else true) &&
+            (if (parkingNearby) it.parkingNearby else true) &&
+            (if (isFree) it.cost == 0 else true) &&
+            (if (currentlyOpen) getToiletOpenString(it) == "Open" else true)
         }
 
+        filterState = newFilterState
+
         filterState = filterState.copy(filteredToilets = filteredToiletList)
+
+        refreshToiletMarkers()
     }
+
     /**
      * Open map view and move and zoom camera to selected [toilet] location
      */
@@ -326,6 +346,7 @@ class MainViewModel @Inject constructor(
             toiletsState = toiletsState.copy(toiletList = toilets)
 
             Log.d(Tags.MainViewModelTag.toString(), "Saved toilets $toilets")
+            updateToiletFilters(filterState)
             refreshToiletMarkers()
 
         }
@@ -382,13 +403,14 @@ class MainViewModel @Inject constructor(
             coordinates = mapState.cameraPosition.position.target
         )
     }
+
     /**
      * TODO
      *
      */
     private fun refreshToiletMarkers(){
         Log.d(Tags.MainViewModelTag.toString(), "Refreshing toilets")
-        var toiletList = toiletsState.toiletList.map { toilet ->  toToiletMarker(toilet)}
+        var toiletList = filterState.filteredToilets.map { toilet ->  toToiletMarker(toilet)}
         toiletList = toiletList.sortedBy { getToiletDistanceMeters(mapState.userPosition, it.position) }
         mapState = mapState.copy(toiletMarkers = toiletList)
     }

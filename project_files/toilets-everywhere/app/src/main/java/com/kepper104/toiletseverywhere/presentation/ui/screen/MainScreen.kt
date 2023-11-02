@@ -15,6 +15,7 @@ import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.navigation.BottomNavigationBar
 import com.kepper104.toiletseverywhere.presentation.navigation.HandleEvents
 import com.kepper104.toiletseverywhere.presentation.navigation.HandleNavigationEvents
+import com.kepper104.toiletseverywhere.presentation.navigation.MapTopAppBar
 import com.kepper104.toiletseverywhere.presentation.navigation.NavScaffold
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.AuthScreenDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.MainScreenDestination
@@ -78,6 +79,7 @@ fun MainScreen(
 
     NavScaffold(
         navController = navController,
+        topBar = { MapTopAppBar() },
         bottomBar = {
             if (it != AuthScreenDestination){
                 BottomNavigationBar(

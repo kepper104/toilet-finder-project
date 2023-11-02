@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,7 +26,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
@@ -51,10 +49,10 @@ import com.ramcosta.composedestinations.utils.isRouteOnBackStack
 // TODO maybe move to utils
 val destinationToDetailScreenMapping = mapOf(CurrentDetailsScreen.MAP to BottomBarDestination.MapView, CurrentDetailsScreen.LIST to BottomBarDestination.ListView)
 
+// TODO figure out insane lagging and stuttering in map view
 /**
- * TODO
- *
- * @param navController
+ * Bottom navigation bar component, contains buttons for navigating between app modules,
+ * takes a [navController] to handle the navigation
  */
 @Composable
 fun BottomNavigationBar(
@@ -106,17 +104,16 @@ fun BottomNavigationBar(
 }
 
 /**
- * TODO
- *
- * @param navController
- * @param bottomBar
- * @param content
+ * Main composable component which contains all others,
+ * including [topBar], [bottomBar] and current screen [content] itself.
+ * Requires [navController] to pass current destination to [bottomBar]
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NavScaffold(
     navController: NavHostController,
     bottomBar: @Composable (TypedDestination<out Any?>) -> Unit,
+    topBar: @Composable () -> Unit,
     content: @Composable (PaddingValues) -> Unit,
 ) {
     val destination =
@@ -126,15 +123,15 @@ fun NavScaffold(
 
 
     Scaffold(
-        topBar = { MapTopAppBar()},
+        topBar = { topBar() },
         bottomBar = { bottomBar(destination) },
         content = content
     )
 }
 
 /**
- * TODO
- *
+ * Top navigation bar component, shows current screen name as well as buttons to interact with it
+ * and the navigate back button if needed
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -235,16 +232,20 @@ fun MapTopAppBar() {
                 IconButton(onClick = { mainViewModel.toggleToiletFilterMenu() }) {
                     Icon(imageVector = Icons.Default.FilterAlt, contentDescription = "Filter toilets")
                 }
-                FilterDropdownMenu(vm = mainViewModel)
+
+                FilterDropdownMenu(viewModel = mainViewModel)
 
                 IconButton(onClick = { mainViewModel.getLatestToilets() }) {
                     Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh toilets")
                 }
 
             }else if (mainViewModel.navigationState.currentDestination == BottomBarDestination.ListView){
-                IconButton(onClick = { mainViewModel.placeholder() }) {
+                IconButton(onClick = { mainViewModel.toggleToiletFilterMenu() }) {
                     Icon(imageVector = Icons.Default.FilterAlt, contentDescription = "Filter toilets")
                 }
+
+                FilterDropdownMenu(viewModel = mainViewModel)
+
                 IconButton(onClick = { mainViewModel.getLatestToilets() }) {
                     Icon(imageVector = Icons.Default.Refresh, contentDescription = "Refresh toilets")
                 }
@@ -254,10 +255,8 @@ fun MapTopAppBar() {
 }
 
 /**
- * TODO
- *
- * @param viewModel
- * @param composeContext
+ * Composable function that handles showing user events such as toasts received from the [viewModel].
+ * Requires [composeContext] to show toasts.
  */
 @Composable
 fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
@@ -288,10 +287,9 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
 }
 
 /**
- * TODO
- *
- * @param viewModel
- * @param navController
+ * Composable function that handles navigating user to a different screen/view when needed by app,
+ * e.g. going to map view after pressing GO TO MAP button in list view.
+ * Requires [viewModel] to get navigation events and [navController] to navigate
  */
 @Composable
 fun HandleNavigationEvents(viewModel: MainViewModel, navController: NavHostController) {
@@ -315,27 +313,44 @@ fun HandleNavigationEvents(viewModel: MainViewModel, navController: NavHostContr
 }
 
 /**
- * TODO
+ * Menu component that is shown when pressing the filter button.
+ * Requires [viewModel] to remember and apply currently selected filter settings
  *
  */
 @Composable
-fun FilterDropdownMenu(vm: MainViewModel) {
+fun FilterDropdownMenu(viewModel: MainViewModel) {
     DropdownMenu(
-        expanded = vm.filterState.isMenuShown,
-        onDismissRequest = { vm.filterState = vm.filterState.copy(isMenuShown = false) }) {
+        expanded = viewModel.filterState.isMenuShown,
+        onDismissRequest = { viewModel.filterState = viewModel.filterState.copy(isMenuShown = false) }) {
 
         Row{
             Text(text = "Filters")
         }
         Row{
-            Text(text = "Public")
-            Checkbox(checked = vm.filterState.isPublic, onCheckedChange = {vm.updateToiletFilters(vm.filterState.copy(isPublic = !vm.filterState.isPublic))})
+            Text(text = "Must be Public")
+            Checkbox(checked = viewModel.filterState.isPublic, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(isPublic = !viewModel.filterState.isPublic))})
+        }
+        Row{
+            Text(text = "Accessible")
+            Checkbox(checked = viewModel.filterState.disabledAccess, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(disabledAccess = !viewModel.filterState.disabledAccess))})
+        }
+        Row{
+            Text(text = "Baby Care Station")
+            Checkbox(checked = viewModel.filterState.babyAccess, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(babyAccess = !viewModel.filterState.babyAccess))})
+        }
+        Row{
+            Text(text = "Parking near")
+            Checkbox(checked = viewModel.filterState.parkingNearby, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(parkingNearby = !viewModel.filterState.parkingNearby))})
+        }
+        Row{
+            Text(text = "Must be open")
+            Checkbox(checked = viewModel.filterState.currentlyOpen, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(currentlyOpen = !viewModel.filterState.currentlyOpen))})
+        }
+        Row{
+            Text(text = "Must be Free")
+            Checkbox(checked = viewModel.filterState.isFree, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(isFree = !viewModel.filterState.isFree))})
         }
 
-        Row{
-            Text(text = "Checkbox 2")
-            Checkbox(checked = false, onCheckedChange = {})
-        }
 
     }
 }

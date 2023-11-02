@@ -74,7 +74,7 @@ fun ListScreen(
         LazyColumn(
 
         ){
-            for (toilet in mainViewModel.toiletsState.toiletList){
+            for (toilet in mainViewModel.filterState.filteredToilets){
                 item{
                     ToiletCard(toilet = toilet, navigateToDetails = mainViewModel::navigateToDetails, getToiletDistanceMeters(mainViewModel.mapState.userPosition, toilet.coordinates))
                     Spacer(modifier = Modifier.height(10.dp))
