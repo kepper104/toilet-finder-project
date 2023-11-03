@@ -8,5 +8,8 @@ import com.kepper104.toiletseverywhere.domain.model.Toilet
  * @property toiletList
  */
 data class ToiletsState (
-    val toiletList: List<Toilet> = emptyList()
+    val toiletList: List<Toilet> = emptyList(),
+    val filteredToiletList: List<Toilet> = emptyList(),
+    val toiletMarkerList: List<ToiletMarker> = emptyList(),
+
 )

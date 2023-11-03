@@ -1,13 +1,10 @@
 package com.kepper104.toiletseverywhere.presentation.ui.state
 
-import com.kepper104.toiletseverywhere.domain.model.Toilet
 
 /**
- * TODO
- *
+ * Stores currently selected toilet filter options
  */
 data class FilterState (
-    val filteredToilets: List<Toilet> = emptyList(),
     val isMenuShown: Boolean = false,
     val isPublic: Boolean = false,
     val disabledAccess: Boolean = false,

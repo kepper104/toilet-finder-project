@@ -110,6 +110,7 @@ sealed class ScreenEvent{
     object PlaceholderFunction: ScreenEvent()
     object ToiletCreationFailToast: ScreenEvent()
     object ToiletCreationSuccessToast: ScreenEvent()
+    object FiltersMatchNoToiletsToast: ScreenEvent()
 }
 
 /**
@@ -120,12 +121,4 @@ sealed class NavigationEvent{
     object NavigateToMap: NavigationEvent()
     object NavigateToList: NavigationEvent()
     object NavigateToSettings: NavigationEvent()
-}
-
-/**
- * TODO
- *
- */
-enum class ChangedFilterOption{
-    IsPublic, DisabledAccess,
 }

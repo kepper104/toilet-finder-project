@@ -4,8 +4,16 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material.icons.filled.ArrowBack
@@ -13,6 +21,8 @@ import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.FilterAlt
+import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -25,7 +35,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
@@ -41,6 +58,7 @@ import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.MapSc
 import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.TypedDestination
 import com.kepper104.toiletseverywhere.presentation.ui.screen.startAppDestination
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
+import com.kepper104.toiletseverywhere.presentation.ui.state.FilterState
 import com.ramcosta.composedestinations.navigation.navigate
 import com.ramcosta.composedestinations.navigation.popBackStack
 import com.ramcosta.composedestinations.navigation.popUpTo
@@ -191,9 +209,7 @@ fun MapTopAppBar() {
 
             // Top Bar navigation buttons
             if (mainViewModel.navigationState.currentDestination == BottomBarDestination.MapView){
-                Log.d(Tags.CompositionLogger.toString(), "Showing buttons for MapView")
 
-                //
                 if (mainViewModel.mapState.addingToilet){
                     IconButton(onClick = { mainViewModel.navigateToNewToiletDetailsScreen(); mainViewModel.mapState = mainViewModel.mapState.copy(addingToilet = false) }) {
                         Icon(
@@ -222,7 +238,8 @@ fun MapTopAppBar() {
                                 else
                                     Icons.Filled.AddCircleOutline,
 
-                            contentDescription = "Add a new toilet")
+                            contentDescription = "Add a new toilet"
+                        )
                     }
                 }
                 else{
@@ -230,7 +247,14 @@ fun MapTopAppBar() {
 
                 }
                 IconButton(onClick = { mainViewModel.toggleToiletFilterMenu() }) {
-                    Icon(imageVector = Icons.Default.FilterAlt, contentDescription = "Filter toilets")
+                    Icon(
+                        imageVector =
+                        if (mainViewModel.filterState.copy(isMenuShown = false) == FilterState())
+                            Icons.Outlined.FilterAlt
+                        else
+                            Icons.Filled.FilterAlt,
+                        contentDescription = "Filter toilets"
+                    )
                 }
 
                 FilterDropdownMenu(viewModel = mainViewModel)
@@ -241,7 +265,14 @@ fun MapTopAppBar() {
 
             }else if (mainViewModel.navigationState.currentDestination == BottomBarDestination.ListView){
                 IconButton(onClick = { mainViewModel.toggleToiletFilterMenu() }) {
-                    Icon(imageVector = Icons.Default.FilterAlt, contentDescription = "Filter toilets")
+                    Icon(
+                        imageVector =
+                        if (mainViewModel.filterState.copy(isMenuShown = false) == FilterState())
+                            Icons.Outlined.FilterAlt
+                        else
+                            Icons.Filled.FilterAlt,
+                        contentDescription = "Filter toilets"
+                    )
                 }
 
                 FilterDropdownMenu(viewModel = mainViewModel)
@@ -278,8 +309,13 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
                 ScreenEvent.ToiletCreationFailToast -> {
                     makeToast("An error occurred when creating a new toilet", composeContext, Toast.LENGTH_SHORT)
                 }
+
                 ScreenEvent.ToiletCreationSuccessToast -> {
                     makeToast("New toilet created successfully!", composeContext, Toast.LENGTH_SHORT)
+                }
+
+                ScreenEvent.FiltersMatchNoToiletsToast -> {
+                    makeToast("No toilets match selected filters", composeContext, Toast.LENGTH_SHORT)
                 }
             }
         }
@@ -314,43 +350,73 @@ fun HandleNavigationEvents(viewModel: MainViewModel, navController: NavHostContr
 
 /**
  * Menu component that is shown when pressing the filter button.
- * Requires [viewModel] to remember and apply currently selected filter settings
- *
+ * Requires [viewModel] to remember and apply currently selected filter settings.
  */
 @Composable
 fun FilterDropdownMenu(viewModel: MainViewModel) {
     DropdownMenu(
         expanded = viewModel.filterState.isMenuShown,
-        onDismissRequest = { viewModel.filterState = viewModel.filterState.copy(isMenuShown = false) }) {
+        onDismissRequest = { viewModel.filterState = viewModel.filterState.copy(isMenuShown = false) }
+    ) {
 
-        Row{
+        Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+
             Text(text = "Filters")
-        }
-        Row{
-            Text(text = "Must be Public")
-            Checkbox(checked = viewModel.filterState.isPublic, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(isPublic = !viewModel.filterState.isPublic))})
-        }
-        Row{
-            Text(text = "Accessible")
-            Checkbox(checked = viewModel.filterState.disabledAccess, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(disabledAccess = !viewModel.filterState.disabledAccess))})
-        }
-        Row{
-            Text(text = "Baby Care Station")
-            Checkbox(checked = viewModel.filterState.babyAccess, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(babyAccess = !viewModel.filterState.babyAccess))})
-        }
-        Row{
-            Text(text = "Parking near")
-            Checkbox(checked = viewModel.filterState.parkingNearby, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(parkingNearby = !viewModel.filterState.parkingNearby))})
-        }
-        Row{
-            Text(text = "Must be open")
-            Checkbox(checked = viewModel.filterState.currentlyOpen, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(currentlyOpen = !viewModel.filterState.currentlyOpen))})
-        }
-        Row{
-            Text(text = "Must be Free")
-            Checkbox(checked = viewModel.filterState.isFree, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(isFree = !viewModel.filterState.isFree))})
-        }
+
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text(text = "Must be Public", modifier = Modifier.padding(start = 5.dp))
+                Spacer(modifier = Modifier.weight(1f))
+                Checkbox(checked = viewModel.filterState.isPublic, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(isPublic = !viewModel.filterState.isPublic))},  )
 
 
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text(text = "Accessible", modifier = Modifier.padding(start = 5.dp))
+                Spacer(modifier = Modifier.weight(1f))
+
+                Checkbox(checked = viewModel.filterState.disabledAccess, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(disabledAccess = !viewModel.filterState.disabledAccess))},  )
+
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text(text = "Baby Care Station", modifier = Modifier.padding(start = 5.dp))
+                Spacer(modifier = Modifier.weight(1f))
+
+                Checkbox(checked = viewModel.filterState.babyAccess, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(babyAccess = !viewModel.filterState.babyAccess))},  )
+
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text(text = "Parking near", modifier = Modifier.padding(start = 5.dp))
+                Spacer(modifier = Modifier.weight(1f))
+
+                Checkbox(checked = viewModel.filterState.parkingNearby, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(parkingNearby = !viewModel.filterState.parkingNearby))})
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text(text = "Must be open", modifier = Modifier.padding(start = 5.dp))
+                Spacer(modifier = Modifier.weight(1f))
+
+                Checkbox(checked = viewModel.filterState.currentlyOpen, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(currentlyOpen = !viewModel.filterState.currentlyOpen))})
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Text(text = "Must be Free", modifier = Modifier.padding(start = 5.dp))
+                Spacer(modifier = Modifier.weight(1f))
+
+                Checkbox(checked = viewModel.filterState.isFree, onCheckedChange = {viewModel.updateToiletFilters(viewModel.filterState.copy(isFree = !viewModel.filterState.isFree))})
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically){
+                Button(onClick = { viewModel.applyToiletFilters() }, modifier = Modifier.weight(1f).padding(end = 2.dp), shape = RectangleShape) {
+                    Text(text = "Apply")
+                }
+                Button(onClick = { viewModel.resetToiletFilters() }, modifier = Modifier.weight(1f).padding(start = 2.dp), shape = RectangleShape) {
+                    Text(text = "Reset")
+
+                }
+            }
+        }
     }
 }

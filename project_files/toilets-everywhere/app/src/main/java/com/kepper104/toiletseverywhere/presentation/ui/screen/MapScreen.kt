@@ -82,7 +82,7 @@ fun MapScreen(
             )
 
 
-            for (marker in mainViewModel.mapState.toiletMarkers){
+            for (marker in mainViewModel.toiletsState.toiletMarkerList){
                 val curToilet = marker.toilet
                 Marker(
                     state = MarkerState(position = marker.position),

@@ -69,12 +69,19 @@ fun ListScreen(
         }
 
         Log.d(Tags.CompositionLogger.toString(), "Composing list!")
-//        Text(text = "List Screen")
-        
-        LazyColumn(
 
-        ){
-            for (toilet in mainViewModel.filterState.filteredToilets){
+        LazyColumn {
+            if (mainViewModel.toiletsState.toiletList.isEmpty()){
+                item{
+                    Text(text = "We couldn't find any toilets whatsoever ;( Try again later")
+                }
+            }
+            else if (mainViewModel.toiletsState.filteredToiletList.isEmpty()){
+                item{
+                    Text(text = "Selected filters don't match any available toilets, so try changing them up!")
+                }
+            }
+            for (toilet in mainViewModel.toiletsState.filteredToiletList){
                 item{
                     ToiletCard(toilet = toilet, navigateToDetails = mainViewModel::navigateToDetails, getToiletDistanceMeters(mainViewModel.mapState.userPosition, toilet.coordinates))
                     Spacer(modifier = Modifier.height(10.dp))
