@@ -20,31 +20,40 @@ import com.kepper104.toiletseverywhere.data.toApiToilet
 import com.kepper104.toiletseverywhere.domain.model.LocalUser
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
+import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
+
+enum class DataStoreKeys(val key: String){
+    UserID("user_id"),
+    IsLoggedIn("is_logged_in"),
+    DisplayName("display_name"),
+    CreationDate("creation_date"),
+    DarkModeSetting("dark_mode")
+}
+
 /**
- * TODO
- *
- * @property mainApi
- * @property dataStore
+ * Main production implementation of [Repository] interface,
+ * requires [mainApi] and [dataStore] to be injected by dagger hilt to get information from
  */
 @OptIn(DelicateCoroutinesApi::class)
 class RepositoryImplementation (
     private val mainApi: MainApi,
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
 ) : Repository{
 
     override var currentUser: LocalUser = LocalUser()
-
+    override var darkModeSetting: Int = -1
     override var loginStatus: LoginStatus = LoginStatus.None
 
 
     init {
         GlobalScope.launch {
-            refreshCurrentUser()
+            loadCurrentUser()
+            loadDarkModeDataStore()
         }
     }
 
@@ -196,7 +205,7 @@ class RepositoryImplementation (
 
         if (user != null){
             loginStatus = LoginStatus.Success
-            saveDataStore(user.id_, true, user.display_name_, user.creation_date_)
+            saveAuthDataStore(user.id_, true, user.display_name_, user.creation_date_)
             Log.d(Tags.RepositoryLogger.toString(), "Login success")
         } else{
             loginStatus = LoginStatus.Fail
@@ -213,31 +222,33 @@ class RepositoryImplementation (
     override suspend fun logout() {
         Log.d(Tags.TempLogger.tag, "Logging out")
 
-        clearDataStore()
+        clearAuthDataStore()
     }
 
     /**
-     * TODO
-     *
-     * @param login
-     * @param password
-     * @param displayName
+     * Post a register request to the [mainApi]
+     * that consists of [login], [password] and [displayName]
      */
     override suspend fun register(login: String, password: String, displayName: String) {
         Log.d(Tags.TempLogger.tag, "Registering")
 
+        try{
 
-        val res = mainApi.registerUser(RegisterData(login, password, displayName))
 
-        if (res.isSuccessful){
-            Log.d(Tags.RepositoryLogger.toString(), "Register success")
+            val res = mainApi.registerUser(RegisterData(login, password, displayName))
 
-            login(login, password)
+            if (res.isSuccessful) {
+                Log.d(Tags.RepositoryLogger.toString(), "Register success")
 
-        }else{
-            Log.d(Tags.RepositoryLogger.toString(), "Login failure")
-            // TODO login failure handling and messaging
+                login(login, password)
 
+            } else{
+                Log.d(Tags.RepositoryLogger.toString(), "Login failure")
+                // TODO login failure handling and messaging
+
+            }
+        } catch (e: Exception){
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
         }
     }
 
@@ -249,8 +260,8 @@ class RepositoryImplementation (
     override suspend fun continueWithoutLogin() {
         Log.d(Tags.TempLogger.tag, "Logging in anonymously")
 
-        clearDataStore()
-        saveDataStore(isLoggedIn = true)
+        clearAuthDataStore()
+        saveAuthDataStore(isLoggedIn = true)
     }
 
     /**
@@ -262,15 +273,43 @@ class RepositoryImplementation (
     override suspend fun checkIfLoginExists(login: String): Boolean? {
         Log.d(Tags.TempLogger.tag, "Checking login availability")
 
-        val res = mainApi.checkLogin(login)
-        // TODO naming of this function is clusterfucked
+        try {
+            val res = mainApi.checkLogin(login)
+            // TODO naming of this function is clusterfucked
 
-        if (res.isSuccessful){
-            return res.body()!!.UserExists
+            if (res.isSuccessful){
+                return res.body()!!.UserExists
+            }
+        } catch (e: Exception) {
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
         }
         return null
 
     }
+
+    /**
+     * TODO
+     *
+     * @param newDarkModeSetting
+     */
+    override suspend fun saveDarkModeDataStore(
+        newDarkModeSetting: DarkModeStatus
+    ){
+        dataStore.edit {
+            it[intPreferencesKey(DataStoreKeys.DarkModeSetting.key)] = newDarkModeSetting.ordinal
+            Log.d(Tags.RepositoryLogger.toString(), "Saved dark mode to $newDarkModeSetting")
+        }
+    }
+
+    /**
+     * TODO
+     *
+     */
+    override suspend fun loadDarkModeDataStore(){
+        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.DarkModeSetting.key)] ?: 0
+        darkModeSetting = id
+    }
+
 
     /**
      * TODO
@@ -280,44 +319,69 @@ class RepositoryImplementation (
      * @param displayName
      * @param creationDate
      */
-    private suspend fun saveDataStore(
+    private suspend fun saveAuthDataStore(
         id: Int? = null,
         isLoggedIn: Boolean? = null,
         displayName: String? = null,
         creationDate: String? = null)
     {
-        Log.d(Tags.RepositoryLogger.toString(), "Saving datastore...")
+        Log.d(Tags.RepositoryLogger.toString(), "Saving auth datastore...")
         if (id != null) {
             dataStore.edit {
-                it[intPreferencesKey("id")] = id
+                it[intPreferencesKey(DataStoreKeys.UserID.key)] = id
                 Log.d(Tags.RepositoryLogger.toString(), "Saved id")
 
             }
         }
         if (isLoggedIn != null) {
             dataStore.edit {
-                it[booleanPreferencesKey("isLoggedIn")] = isLoggedIn
+                it[booleanPreferencesKey(DataStoreKeys.IsLoggedIn.key)] = isLoggedIn
                 Log.d(Tags.RepositoryLogger.toString(), "Saved isLoggedIn")
 
             }
         }
         if (displayName != null) {
             dataStore.edit {
-                it[stringPreferencesKey("displayName")] = displayName
+                it[stringPreferencesKey(DataStoreKeys.DisplayName.key)] = displayName
                 Log.d(Tags.RepositoryLogger.toString(), "Saved name")
 
             }
         }
         if (creationDate != null) {
             dataStore.edit {
-                it[stringPreferencesKey("creationDate")] = creationDate
+                it[stringPreferencesKey(DataStoreKeys.CreationDate.key)] = creationDate
                 Log.d(Tags.RepositoryLogger.toString(), "Saved date")
 
             }
 
         }
 
-        refreshCurrentUser()
+        loadCurrentUser()
+
+    }
+
+
+    /**
+     * TODO
+     *
+     */
+    private suspend fun clearAuthDataStore(){
+        dataStore.edit {
+            it[intPreferencesKey(DataStoreKeys.UserID.key)] = 0
+        }
+
+        dataStore.edit {
+            it[booleanPreferencesKey(DataStoreKeys.IsLoggedIn.key)] = false
+        }
+
+        dataStore.edit {
+            it[stringPreferencesKey(DataStoreKeys.DisplayName.key)] = NOT_LOGGED_IN_STRING
+        }
+
+        dataStore.edit {
+            it[stringPreferencesKey(DataStoreKeys.CreationDate.key)] = "2023-01-01"
+        }
+        loadCurrentUser()
 
     }
 
@@ -325,35 +389,11 @@ class RepositoryImplementation (
      * TODO
      *
      */
-    private suspend fun clearDataStore(){
-        dataStore.edit {
-            it[intPreferencesKey("id")] = 0
-        }
-
-        dataStore.edit {
-            it[booleanPreferencesKey("isLoggedIn")] = false
-        }
-
-        dataStore.edit {
-            it[stringPreferencesKey("displayName")] = NOT_LOGGED_IN_STRING
-        }
-
-        dataStore.edit {
-            it[stringPreferencesKey("creationDate")] = "2023-01-01"
-        }
-        refreshCurrentUser()
-
-    }
-
-    /**
-     * TODO
-     *
-     */
-    private suspend fun refreshCurrentUser(){
-        val id = dataStore.data.first()[intPreferencesKey("id")] ?: 0
-        val isLoggedIn = dataStore.data.first()[booleanPreferencesKey("isLoggedIn")] ?: false
-        val displayName = dataStore.data.first()[stringPreferencesKey("displayName")] ?: NOT_LOGGED_IN_STRING
-        val creationDate = dataStore.data.first()[stringPreferencesKey("creationDate")] ?: "2023-01-01"
+    private suspend fun loadCurrentUser(){
+        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.UserID.key)] ?: 0
+        val isLoggedIn = dataStore.data.first()[booleanPreferencesKey(DataStoreKeys.IsLoggedIn.key)] ?: false
+        val displayName = dataStore.data.first()[stringPreferencesKey(DataStoreKeys.DisplayName.key)] ?: NOT_LOGGED_IN_STRING
+        val creationDate = dataStore.data.first()[stringPreferencesKey(DataStoreKeys.CreationDate.key)] ?: "2023-01-01"
 
         currentUser.id = id
         currentUser.isLoggedIn = isLoggedIn

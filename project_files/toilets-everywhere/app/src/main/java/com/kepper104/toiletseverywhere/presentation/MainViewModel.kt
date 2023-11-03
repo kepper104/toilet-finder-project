@@ -32,6 +32,8 @@ import com.kepper104.toiletseverywhere.presentation.ui.state.LoggedInUserState
 import com.kepper104.toiletseverywhere.presentation.ui.state.MapState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NavigationState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NewToiletDetailsState
+import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
+import com.kepper104.toiletseverywhere.presentation.ui.state.SettingsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletMarker
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletViewDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletsState
@@ -47,7 +49,7 @@ import javax.inject.Inject
 
 
 /**
- * The only viewmodel in project, handles communicating data between Repository and UI
+ * The only view-model in project, handles communicating data between Repository and UI
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -62,6 +64,7 @@ class MainViewModel @Inject constructor(
     var loggedInUserState by mutableStateOf(LoggedInUserState())
     var newToiletDetailsState by mutableStateOf(NewToiletDetailsState())
     var filterState by mutableStateOf(FilterState())
+    var settingsState by mutableStateOf(SettingsState())
 
     private val _eventFlow = MutableSharedFlow<ScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
@@ -108,12 +111,30 @@ class MainViewModel @Inject constructor(
             delay(200L)
         }
     }
+
+    private var darkModeStatusFlow = flow {
+        while (repository.darkModeSetting == -1){
+            delay(100L)
+        }
+        emit(repository.darkModeSetting)
+    }
+
     init {
         collectLoginStatusFlow()
-
+        collectDarkModeStatusFlow()
         getLatestToilets()
     }
 
+
+    /**
+     * Change currently saved dark mode preference to [newDarkModeSetting].
+     */
+    fun changeSelectedDarkModeSetting(newDarkModeSetting: DarkModeStatus){
+        settingsState = settingsState.copy(selectedDarkModeOption = newDarkModeSetting)
+        viewModelScope.launch {
+            repository.saveDarkModeDataStore(newDarkModeSetting)
+        }
+    }
 
     /**
      * Toggle the toilet filter menu dropdown. (So open if closed and close if open).
@@ -353,6 +374,19 @@ class MainViewModel @Inject constructor(
                         Log.d(Tags.MainViewModelTag.toString(), "Logging in...")
                     }  // TODO maybe show a loading icon
                 }
+            }
+        }
+    }
+
+    /**
+     * TODO
+     *
+     */
+    private fun collectDarkModeStatusFlow(){
+        viewModelScope.launch {
+            darkModeStatusFlow.collect {darkModeStatusID ->
+                Log.d(Tags.MainViewModelTag.tag, "New dark mode status: " + darkModeStatusID.toString())
+                changeSelectedDarkModeSetting(DarkModeStatus.values()[darkModeStatusID])
             }
         }
     }

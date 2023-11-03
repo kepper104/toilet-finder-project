@@ -60,7 +60,7 @@ import com.ramcosta.composedestinations.utils.isRouteOnBackStack
 // TODO maybe move to utils
 val destinationToDetailScreenMapping = mapOf(CurrentDetailsScreen.MAP to BottomBarDestination.MapView, CurrentDetailsScreen.LIST to BottomBarDestination.ListView)
 
-// TODO figure out insane lagging and stuttering in map view
+// TODO figure out lagging and stuttering in map view
 /**
  * Bottom navigation bar component, contains buttons for navigating between app modules,
  * takes a [navController] to handle the navigation

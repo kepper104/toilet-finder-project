@@ -4,6 +4,7 @@ import com.kepper104.toiletseverywhere.data.LoginStatus
 import com.kepper104.toiletseverywhere.domain.model.LocalUser
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
+import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
 
 /**
  * TODO
@@ -12,8 +13,8 @@ import com.kepper104.toiletseverywhere.domain.model.User
 interface Repository{
 
     var currentUser: LocalUser
-
     var loginStatus: LoginStatus
+    var darkModeSetting: Int
 
     /**
      * TODO
@@ -82,5 +83,18 @@ interface Repository{
      * @param toilet
      */
     suspend fun createToilet(toilet: Toilet)
+
+    /**
+     * TODO
+     *
+     * @param newDarkModeSetting
+     */
+    suspend fun saveDarkModeDataStore(newDarkModeSetting: DarkModeStatus)
+
+    /**
+     * TODO
+     *
+     */
+    suspend fun loadDarkModeDataStore()
 
 }
