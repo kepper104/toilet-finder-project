@@ -50,7 +50,8 @@ import javax.inject.Inject
 
 
 /**
- * The only view-model in project, handles communicating data between Repository and UI
+ * The only view-model in project, handles all app business logic
+ * and communicating data between Repository and UI
  */
 @HiltViewModel
 class MainViewModel @Inject constructor(
@@ -138,6 +139,12 @@ class MainViewModel @Inject constructor(
         collectMapStyleStatusFlow()
         getLatestToilets()
     }
+
+
+    fun postToiletReview(){
+
+    }
+
 
     /**
      * TODO

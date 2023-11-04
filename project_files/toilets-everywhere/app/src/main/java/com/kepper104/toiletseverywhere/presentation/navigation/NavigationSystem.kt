@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.FilterAlt
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -28,12 +29,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -409,14 +412,59 @@ fun FilterDropdownMenu(viewModel: MainViewModel) {
             }
 
             Row(verticalAlignment = Alignment.CenterVertically){
-                Button(onClick = { viewModel.applyToiletFilters() }, modifier = Modifier.weight(1f).padding(end = 2.dp), shape = RectangleShape) {
+                Button(onClick = { viewModel.applyToiletFilters() }, modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 2.dp), shape = RectangleShape) {
                     Text(text = "Apply")
                 }
-                Button(onClick = { viewModel.resetToiletFilters() }, modifier = Modifier.weight(1f).padding(start = 2.dp), shape = RectangleShape) {
+                Button(onClick = { viewModel.resetToiletFilters() }, modifier = Modifier
+                    .weight(1f)
+                    .padding(start = 2.dp), shape = RectangleShape) {
                     Text(text = "Reset")
 
                 }
             }
         }
     }
+}
+
+@Composable
+fun ConfirmActionAlertDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogText: String,
+    icon: ImageVector,
+) {
+    AlertDialog(
+        icon = {
+            Icon(icon, contentDescription = "Example Icon")
+        },
+        title = {
+            Text(text = "Confirm action")
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Dismiss")
+            }
+        }
+    )
 }

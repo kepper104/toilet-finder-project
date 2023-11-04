@@ -18,6 +18,7 @@ import com.kepper104.toiletseverywhere.data.api.RegisterData
 import com.kepper104.toiletseverywhere.data.fromApiToilet
 import com.kepper104.toiletseverywhere.data.fromApiUser
 import com.kepper104.toiletseverywhere.data.toApiToilet
+import com.kepper104.toiletseverywhere.domain.model.ApiReview
 import com.kepper104.toiletseverywhere.domain.model.LocalUser
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
@@ -358,6 +359,14 @@ class RepositoryImplementation (
         Log.d(Tags.RepositoryLogger.tag, "Loading map style: $id")
 
         mapStyle = id
+    }
+
+    override suspend fun postToiletReview(rating: Int, reviewText: String?) {
+
+    }
+
+    override suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview> {
+        TODO("Not yet implemented")
     }
 
 

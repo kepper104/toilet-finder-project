@@ -71,7 +71,7 @@ fun SettingsScreen(
             DarkModeSelectButtons(viewModel = mainViewModel)
 
             Spacer(modifier = Modifier.height(20.dp))
-            
+
             MapStyleSelection(viewModel = mainViewModel)
 
             Spacer(modifier = Modifier.weight(1f))
