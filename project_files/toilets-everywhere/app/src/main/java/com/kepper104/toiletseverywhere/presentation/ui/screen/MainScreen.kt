@@ -6,6 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
@@ -43,7 +47,10 @@ fun MainScreen(
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
     Log.d(Tags.CompositionLogger.tag, "Entering MainScreen!")
 
-    var currentRoute: Route = AuthScreenDestination
+//    var currentRoute: Route = AuthScreenDestination
+    var currentRoute: Route by remember{
+        mutableStateOf(AuthScreenDestination)
+    }
 
     val isLoggedInFlowChecker = mainViewModel.isLoggedInFlow.collectAsState(initial = null)
 

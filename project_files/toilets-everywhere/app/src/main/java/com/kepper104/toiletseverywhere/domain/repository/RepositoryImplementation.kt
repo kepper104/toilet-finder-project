@@ -10,6 +10,7 @@ import androidx.datastore.preferences.core.stringPreferencesKey
 import com.kepper104.toiletseverywhere.data.LoginStatus
 import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
 import com.kepper104.toiletseverywhere.data.Tags
+import com.kepper104.toiletseverywhere.data.api.DisplayNameUpdateData
 import com.kepper104.toiletseverywhere.data.api.LoginData
 import com.kepper104.toiletseverywhere.data.api.LoginResponse
 import com.kepper104.toiletseverywhere.data.api.MainApi
@@ -20,6 +21,7 @@ import com.kepper104.toiletseverywhere.data.toApiToilet
 import com.kepper104.toiletseverywhere.domain.model.LocalUser
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
+import com.kepper104.toiletseverywhere.presentation.ui.MapStyle
 import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
@@ -32,7 +34,8 @@ enum class DataStoreKeys(val key: String){
     IsLoggedIn("is_logged_in"),
     DisplayName("display_name"),
     CreationDate("creation_date"),
-    DarkModeSetting("dark_mode")
+    DarkMode("dark_mode"),
+    MapStyle("map_style")
 }
 
 /**
@@ -46,14 +49,17 @@ class RepositoryImplementation (
 ) : Repository{
 
     override var currentUser: LocalUser = LocalUser()
-    override var darkModeSetting: Int = -1
     override var loginStatus: LoginStatus = LoginStatus.None
+
+    override var darkMode: Int = -1
+    override var mapStyle: Int = -1
 
 
     init {
         GlobalScope.launch {
             loadCurrentUser()
             loadDarkModeDataStore()
+            loadMapStyleDataStore()
         }
     }
 
@@ -252,6 +258,38 @@ class RepositoryImplementation (
         }
     }
 
+    /**
+     * TODO
+     *
+     * @param newDisplayName
+     */
+    override suspend fun changeDisplayName(newDisplayName: String): Boolean {
+        val userID = currentUser.id
+        Log.d(Tags.RepositoryLogger.tag, "Changing display name to $newDisplayName for $userID")
+        try{
+            val res = mainApi.changeDisplayName(DisplayNameUpdateData(userID, newDisplayName))
+            if (res.isSuccessful){
+                Log.d(Tags.RepositoryLogger.toString(), "Name change success")
+
+                updateDisplayName(newDisplayName)
+                return true
+
+            } else {
+                Log.d(Tags.RepositoryLogger.toString(), "Name change failure")
+                return false
+            }
+        } catch (e: Exception) {
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+            return false
+        }
+
+    }
+
+    private suspend fun updateDisplayName(newDisplayName: String){
+        currentUser = currentUser.copy(displayName = newDisplayName)
+        saveAuthDataStore(displayName = newDisplayName)
+    }
+
 
     /**
      * TODO
@@ -292,11 +330,9 @@ class RepositoryImplementation (
      *
      * @param newDarkModeSetting
      */
-    override suspend fun saveDarkModeDataStore(
-        newDarkModeSetting: DarkModeStatus
-    ){
+    override suspend fun saveDarkModeDataStore(newDarkModeSetting: DarkModeStatus) {
         dataStore.edit {
-            it[intPreferencesKey(DataStoreKeys.DarkModeSetting.key)] = newDarkModeSetting.ordinal
+            it[intPreferencesKey(DataStoreKeys.DarkMode.key)] = newDarkModeSetting.ordinal
             Log.d(Tags.RepositoryLogger.toString(), "Saved dark mode to $newDarkModeSetting")
         }
     }
@@ -306,8 +342,22 @@ class RepositoryImplementation (
      *
      */
     override suspend fun loadDarkModeDataStore(){
-        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.DarkModeSetting.key)] ?: 0
-        darkModeSetting = id
+        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.DarkMode.key)] ?: 0
+        darkMode = id
+    }
+
+    override suspend fun saveMapStyleDataStore(newMapStyle: MapStyle) {
+        dataStore.edit {
+            it[intPreferencesKey(DataStoreKeys.MapStyle.key)] = newMapStyle.ordinal
+            Log.d(Tags.RepositoryLogger.toString(), "Saved map style to $newMapStyle")
+        }
+    }
+
+    override suspend fun loadMapStyleDataStore() {
+        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.MapStyle.key)] ?: 0
+        Log.d(Tags.RepositoryLogger.tag, "Loading map style: $id")
+
+        mapStyle = id
     }
 
 

@@ -4,6 +4,7 @@ import com.kepper104.toiletseverywhere.data.LoginStatus
 import com.kepper104.toiletseverywhere.domain.model.LocalUser
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
+import com.kepper104.toiletseverywhere.presentation.ui.MapStyle
 import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
 
 /**
@@ -14,7 +15,8 @@ interface Repository{
 
     var currentUser: LocalUser
     var loginStatus: LoginStatus
-    var darkModeSetting: Int
+    var darkMode: Int
+    var mapStyle: Int
 
     /**
      * TODO
@@ -39,6 +41,13 @@ interface Repository{
      */
 
     suspend fun register(login: String, password: String, displayName: String)
+
+    /**
+     * TODO
+     *
+     * @param newDisplayName
+     */
+    suspend fun changeDisplayName(newDisplayName: String): Boolean
 
     /**
      * TODO
@@ -96,5 +105,17 @@ interface Repository{
      *
      */
     suspend fun loadDarkModeDataStore()
+
+    /**
+     * TODO
+     *
+     */
+    suspend fun saveMapStyleDataStore(newMapStyle: MapStyle)
+
+    /**
+     * TODO
+     *
+     */
+    suspend fun loadMapStyleDataStore()
 
 }

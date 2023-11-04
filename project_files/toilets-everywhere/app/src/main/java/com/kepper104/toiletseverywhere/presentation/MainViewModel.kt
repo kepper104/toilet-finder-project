@@ -10,8 +10,8 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.CameraPositionState
-import com.google.maps.android.compose.MapProperties
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
 import com.kepper104.toiletseverywhere.data.LoginStatus
@@ -25,6 +25,7 @@ import com.kepper104.toiletseverywhere.data.getToiletOpenString
 import com.kepper104.toiletseverywhere.data.toToiletMarker
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.repository.Repository
+import com.kepper104.toiletseverywhere.presentation.ui.MapStyle
 import com.kepper104.toiletseverywhere.presentation.ui.state.AuthState
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
 import com.kepper104.toiletseverywhere.presentation.ui.state.FilterState
@@ -66,6 +67,7 @@ class MainViewModel @Inject constructor(
     var filterState by mutableStateOf(FilterState())
     var settingsState by mutableStateOf(SettingsState())
 
+
     private val _eventFlow = MutableSharedFlow<ScreenEvent>()
     val eventFlow = _eventFlow.asSharedFlow()
 
@@ -76,7 +78,6 @@ class MainViewModel @Inject constructor(
     private lateinit var locationClient: FusedLocationProviderClient
 
     lateinit var scaffoldPadding: PaddingValues
-
 
 
     private var prevLoggedInValue = false
@@ -112,19 +113,113 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    // TODO change flows to just viewmodelscope loops with function calls
+
     private var darkModeStatusFlow = flow {
-        while (repository.darkModeSetting == -1){
+        while (repository.darkMode == -1){
+            Log.d("Waiting", "dark mode still -1")
+
             delay(100L)
         }
-        emit(repository.darkModeSetting)
+        emit(repository.darkMode)
+    }
+
+    private var mapStyleStatusFlow = flow {
+        while (repository.mapStyle == -1){
+            Log.d("Waiting", "map style still -1")
+            delay(100L)
+        }
+        emit(repository.mapStyle)
     }
 
     init {
         collectLoginStatusFlow()
         collectDarkModeStatusFlow()
+        collectMapStyleStatusFlow()
         getLatestToilets()
     }
 
+    /**
+     * TODO
+     *
+     */
+    fun changeDisplayName() {
+        Log.d(Tags.MainViewModelTag.tag, "Changing name!")
+        viewModelScope.launch {
+            val res = repository.changeDisplayName(settingsState.newDisplayName.trim())
+
+            if (res) {
+                Log.d(Tags.MainViewModelTag.tag, "Changing name success")
+
+                _eventFlow.emit(ScreenEvent.NameChangeSuccessToast)
+
+                loggedInUserState = loggedInUserState.copy(currentUserName = repository.currentUser.displayName)
+            } else {
+                Log.d(Tags.MainViewModelTag.tag, "Changing name fail")
+
+                _eventFlow.emit(ScreenEvent.NameChangeFailToast)
+            }
+            closeNameChangeDialog()
+
+        }
+    }
+
+
+    /**
+     * TODO
+     *
+     */
+    fun closeNameChangeDialog() {
+        settingsState = settingsState.copy(nameChangeDialogOpen = false, newDisplayName = "")
+    }
+
+    /**
+     * TODO
+     *
+     */
+    fun showNameChangeDialog() {
+        settingsState = settingsState.copy(nameChangeDialogOpen = true)
+    }
+    /**
+     * TODO
+     *
+     */
+    fun toggleMapStyleSelectionMenu() {
+        settingsState = settingsState.copy(mapStyleSelectionExpanded = !settingsState.mapStyleSelectionExpanded)
+    }
+
+    /**
+     * TODO
+     *
+     */
+    fun closeMapStyleSelectionMenu() {
+        settingsState = settingsState.copy(mapStyleSelectionExpanded = false)
+    }
+
+    /**
+     * TODO
+     *
+     * @param newMapStyle
+     */
+    fun changeSelectedMapStyle(newMapStyle: MapStyle){
+
+        settingsState = settingsState.copy(selectedMapStyle = newMapStyle)
+
+        Log.d(Tags.MainViewModelTag.tag, "Saving new map style: $newMapStyle")
+        mapState = mapState.copy(properties =
+            mapState.properties.copy(mapStyleOptions =
+                                    if (settingsState.selectedMapStyle.json == null)
+                                        null
+                                    else
+                                        MapStyleOptions(settingsState.selectedMapStyle.json!!)
+            )
+        )
+
+        Log.d(Tags.MainViewModelTag.tag, mapState.properties.mapStyleOptions.toString())
+        viewModelScope.launch {
+            repository.saveMapStyleDataStore(newMapStyle)
+        }
+    }
 
     /**
      * Change currently saved dark mode preference to [newDarkModeSetting].
@@ -279,7 +374,9 @@ class MainViewModel @Inject constructor(
      * Enable showing user location on the map using given [locationProviderClient]
      */
     fun enableLocationServices(locationProviderClient: FusedLocationProviderClient){
-        mapState = mapState.copy(properties = MapProperties(isMyLocationEnabled = true))
+        mapState = mapState.copy(
+            properties = mapState.properties.copy(isMyLocationEnabled = true)
+        )
         locationClient = locationProviderClient
         viewModelScope.launch {
             try{
@@ -385,8 +482,17 @@ class MainViewModel @Inject constructor(
     private fun collectDarkModeStatusFlow(){
         viewModelScope.launch {
             darkModeStatusFlow.collect {darkModeStatusID ->
-                Log.d(Tags.MainViewModelTag.tag, "New dark mode status: " + darkModeStatusID.toString())
+                Log.d(Tags.MainViewModelTag.tag, "New dark mode status: $darkModeStatusID")
                 changeSelectedDarkModeSetting(DarkModeStatus.values()[darkModeStatusID])
+            }
+        }
+    }
+
+    private fun collectMapStyleStatusFlow(){
+        viewModelScope.launch {
+            mapStyleStatusFlow.collect {mapStyleID ->
+                Log.d(Tags.MainViewModelTag.tag, "New map style status: $mapStyleID")
+                changeSelectedMapStyle(MapStyle.values()[mapStyleID])
             }
         }
     }

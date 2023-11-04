@@ -304,11 +304,18 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
                 }
 
                 ScreenEvent.ToiletCreationSuccessToast -> {
-                    makeToast("New toilet created successfully!", composeContext, Toast.LENGTH_SHORT)
+                    makeToast("New toilet created successfully", composeContext, Toast.LENGTH_SHORT)
                 }
 
                 ScreenEvent.FiltersMatchNoToiletsToast -> {
                     makeToast("No toilets match selected filters", composeContext, Toast.LENGTH_SHORT)
+                }
+
+                ScreenEvent.NameChangeFailToast -> {
+                    makeToast("An error occurred while changing name", composeContext, Toast.LENGTH_SHORT)
+                }
+                ScreenEvent.NameChangeSuccessToast -> {
+                    makeToast("Name change successful", composeContext, Toast.LENGTH_SHORT)
                 }
             }
         }

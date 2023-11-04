@@ -35,6 +35,9 @@ interface MainApi {
     @GET("/users/{id}")
     suspend fun getUserById(@Path("id") userId: Int): Response<ApiUser>
 
+    @POST("/users/change_name")
+    suspend fun changeDisplayName(@Body displayNameUpdateData: DisplayNameUpdateData): Response<MessageResponse>
+
 }
 
 /**
@@ -92,7 +95,16 @@ data class MessageResponse(
     val Message: String
 )
 
-
+/**
+ * TODO
+ *
+ * @property user_id
+ * @property new_name
+ */
+data class DisplayNameUpdateData(
+    val user_id: Int,
+    val new_name: String
+)
 
 
 

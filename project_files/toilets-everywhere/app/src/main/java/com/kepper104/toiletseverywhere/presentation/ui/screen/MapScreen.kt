@@ -59,7 +59,7 @@ fun MapScreen(
             return
         }
 
-        Log.d(Tags.CompositionLogger.toString(), "Composing map!")
+        Log.d(Tags.CompositionLogger.toString(), "Composing map!, mapstate prop is ${mainViewModel.mapState.properties.mapStyleOptions.toString()}")
 
 
         GoogleMap(

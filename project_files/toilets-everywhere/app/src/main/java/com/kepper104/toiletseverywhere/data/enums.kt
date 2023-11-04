@@ -105,12 +105,15 @@ enum class ToiletIcons(val icon: BitmapDescriptor){
  *
  */
 sealed class ScreenEvent{
+    // TODO change into enum
     object ToiletAddingEnabledToast: ScreenEvent()
     object ToiletAddingDisabledToast: ScreenEvent()
     object PlaceholderFunction: ScreenEvent()
     object ToiletCreationFailToast: ScreenEvent()
     object ToiletCreationSuccessToast: ScreenEvent()
     object FiltersMatchNoToiletsToast: ScreenEvent()
+    object NameChangeSuccessToast: ScreenEvent()
+    object NameChangeFailToast: ScreenEvent()
 }
 
 /**
