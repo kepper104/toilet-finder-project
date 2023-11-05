@@ -8,118 +8,109 @@ import com.kepper104.toiletseverywhere.domain.model.User
 import com.kepper104.toiletseverywhere.presentation.ui.MapStyle
 import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
 
+// TODO create a RepositoryTestImplementation and test
 /**
- * TODO
- *
+ * The main Repository interface to be implemented by
+ * [RepositoryImplementation] for use in prod
+ * or a mock [RepositoryTestImplementation] for testing.
+ * Production implementation handles communicating data from persistent data sources
+ * such as [DataStore] or [MainApi],
+ * storing it in memory and making it accessible to [MainViewModel]
  */
-interface Repository{
-
+interface Repository {
     var currentUser: LocalUser
     var loginStatus: LoginStatus
     var darkMode: Int
     var mapStyle: Int
 
     /**
-     * TODO
-     *
-     * @param login
-     * @param password
+     * Login a user with given [login] and [password].
      */
     suspend fun login(login: String, password: String)
 
     /**
-     * TODO
-     *
+     * Logout a user by erasing currently stored information on them.
      */
     suspend fun logout()
 
     /**
-     * TODO
-     *
-     * @param login
-     * @param password
-     * @param displayName
+     * Register a new user with given availability verified [login], [password] and [displayName]
      */
-
     suspend fun register(login: String, password: String, displayName: String)
 
     /**
-     * TODO
-     *
-     * @param newDisplayName
-     */
-    suspend fun changeDisplayName(newDisplayName: String): Boolean
-
-    /**
-     * TODO
-     *
+     * Login a user anonymously, making the app usable, but without certain features.
      */
     suspend fun continueWithoutLogin()
 
     /**
-     * TODO
-     *
-     * @param login
-     * @return
+     * Check [login]'s current availability. (i.e. if another user already uses this login)
+     * Returns [Boolean]? that is true if login is occupied, false if it is available
+     * and null if this data if currently unavailable. (e.g. api encountered a network error).
      */
     suspend fun checkIfLoginExists(login: String): Boolean?
 
     /**
-     * TODO
-     *
-     * @return
+     * Change user's current display name to a desired [newDisplayName].
+     * Returns [Boolean] if the update operation was successful.
+     */
+    suspend fun changeDisplayName(newDisplayName: String): Boolean
+
+    /**
+     * Retrieve all toilets (currently really all toilets, regardless of the distance to user).
+     * Returns a [List] of [Toilet]s containing all stored toilets
+     * or null, if this data if currently unavailable. (e.g. api encountered a network error).
      */
     suspend fun retrieveToilets(): List<Toilet>?
 
     /**
-     * TODO
-     *
-     * @param id
-     * @return
+     * Retrieve a toilet with a given [id].
+     * Returns [Toilet] if a toilet with a given [id] was found or null if not.
      */
     suspend fun retrieveToiletById(id: Int): Toilet?
 
     /**
-     * TODO
-     *
-     * @param id
-     * @return
+     * Retrieve a user with a given [id].
+     * Returns [User] if a user with a given [id] was found or null if not.
      */
     suspend fun retrieveUserById(id: Int): User?
 
     /**
-     * TODO
-     *
-     * @param toilet
+     * Create a new toilet.
+     * Requires a [Toilet] class instance with all the data of the new toilet.
      */
     suspend fun createToilet(toilet: Toilet)
 
     /**
-     * TODO
-     *
-     * @param newDarkModeSetting
+     * Save user's dark mode preference to a persistent storage. Requires [newDarkModeSetting].
      */
     suspend fun saveDarkModeDataStore(newDarkModeSetting: DarkModeStatus)
 
     /**
-     * TODO
-     *
+     * Load user's dark mode preference from a persistent storage into repository memory.
      */
     suspend fun loadDarkModeDataStore()
 
     /**
-     * TODO
-     *
+     * Save user's map style preference to a persistent storage. Requires [newMapStyle].
      */
     suspend fun saveMapStyleDataStore(newMapStyle: MapStyle)
 
     /**
-     * TODO
-     *
+     * Load user's map style preference from a persistent storage into repository memory.
      */
     suspend fun loadMapStyleDataStore()
 
+    /**
+     * Post a new review to a persistent storage. Review's [rating], optional [reviewText] and [toiletId] are required.
+     * Returns a [Boolean] indicating whether posting a review was successful.
+     */
     suspend fun postToiletReview(rating: Int, reviewText: String?, toiletId: Int): Boolean
+
+    /**
+     * Retrieve all reviews of a toilet with a given [toiletId].
+     * Returns [List] of [ApiReview]s if a toilet with a given [toiletId] was found or null if not.
+     */
     suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview>?
 
 }

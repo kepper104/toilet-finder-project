@@ -30,7 +30,9 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
-
+/**
+ * Enum containing string [key]s for all datastore stored data.
+ */
 enum class DataStoreKeys(val key: String){
     UserID("user_id"),
     IsLoggedIn("is_logged_in"),
@@ -42,13 +44,14 @@ enum class DataStoreKeys(val key: String){
 
 /**
  * Main production implementation of [Repository] interface,
- * requires [mainApi] and [dataStore] to be injected by dagger hilt to get information from
+ * requires [mainApi] and [dataStore] to be injected by Dagger Hilt
+ * to then be used as persistent data sources
  */
 @OptIn(DelicateCoroutinesApi::class)
 class RepositoryImplementation (
     private val mainApi: MainApi,
     private val dataStore: DataStore<Preferences>,
-) : Repository{
+) : Repository {
 
     override var currentUser: LocalUser = LocalUser()
     override var loginStatus: LoginStatus = LoginStatus.None
@@ -65,144 +68,9 @@ class RepositoryImplementation (
         }
     }
 
-
+    // Interface function implementations -------------
     /**
-     * TODO
-     *
-     * @return
-     */
-    override suspend fun retrieveToilets(): List<Toilet>? {
-        Log.d(Tags.TempLogger.tag, "Retrieving toilets")
-        try{
-            val toilets = mainApi.getToilets()
-
-            if (toilets.isSuccessful){
-                val mappedToilets = toilets.body()!!.map { apiToilet -> fromApiToilet(apiToilet) }
-                val res = mappedToilets.map { toilet ->  toilet.copy(authorName = retrieveUsernameById(toilet.authorId))}
-                return res
-            }
-        } catch (e: Exception){
-            Log.e(Tags.NetworkLogger.tag, e.message.toString())
-        }
-        return null
-    }
-
-    /**
-     * TODO
-     *
-     * @param id
-     * @return
-     */
-    override suspend fun retrieveToiletById(id: Int): Toilet? {
-        Log.d(Tags.TempLogger.tag, "Retrieving toilet by id")
-
-        try {
-            val toilet = mainApi.getToiletById(id)
-
-            if (toilet.isSuccessful) {
-                return fromApiToilet(toilet.body()!!)
-            }
-
-        } catch (e: Exception){
-            Log.e(Tags.NetworkLogger.tag, e.message.toString())
-        }
-        return null
-    }
-
-    /**
-     * TODO
-     *
-     * @param id
-     * @return
-     */
-    override suspend fun retrieveUserById(id: Int): User? {
-        Log.d(Tags.TempLogger.tag, "Retrieving user by id")
-
-        try{
-            val user = mainApi.getUserById(id)
-            if (user.isSuccessful){
-                return fromApiUser(user.body()!!)
-            }
-        } catch (e: Exception){
-            Log.e(Tags.RepositoryLogger.toString(), "User by id not found")
-            Log.e(Tags.NetworkLogger.tag, e.message.toString())
-        }
-
-        return null
-    }
-
-    /**
-     * TODO
-     *
-     * @param toilet
-     */
-    override suspend fun createToilet(toilet: Toilet) {
-        Log.d(Tags.TempLogger.tag, "Creating toilet")
-
-        try{
-            val res = mainApi.createToilet(toApiToilet(toilet))
-
-            if (!res.isSuccessful){
-                Log.d(Tags.RepositoryLogger.tag, res.body().toString())
-                throw Exception("Toilet creation error!")
-            }
-
-        } catch (e: Exception){
-            Log.e(Tags.NetworkLogger.tag, e.message.toString())
-            throw e
-        }
-    }
-
-    /**
-     * TODO
-     *
-     * @param id
-     * @return
-     */
-    private suspend fun retrieveUsernameById(id: Int): String{
-        Log.d(Tags.TempLogger.tag, "Retrieving username by id")
-
-        // Error handling not needed since it already is in retrieveUserById
-        val user = retrieveUserById(id)
-
-        return user?.displayName ?: "Error"
-    }
-
-
-    /**
-     * TODO
-     *
-     * @param login
-     * @param password
-     * @return
-     */
-    private suspend fun checkLogin(login: String, password: String): LoginResponse? {
-        Log.d(Tags.TempLogger.tag, "Checking login")
-
-        try{
-            val res = mainApi.loginUser(LoginData(login, password))
-            Log.d(Tags.RepositoryLogger.toString(), "$res, ${res.isSuccessful}, ${res.body()}")
-
-            if (res.isSuccessful){
-                val user = res.body()!!
-                Log.d(Tags.RepositoryLogger.toString(), res.body()!!.toString())
-
-                return user
-            }
-
-        } catch (e: Exception){
-            Log.e(Tags.NetworkLogger.tag, e.message.toString())
-        }
-
-        return null
-    }
-
-
-    /**
-     * TODO
-     *
-     * @param login
-     * @param password
+     * Login a user by making a call to [MainApi] with given [login] and [password].
      */
     override suspend fun login(login: String, password: String) {
         Log.d(Tags.TempLogger.tag, "Logging in")
@@ -222,10 +90,9 @@ class RepositoryImplementation (
         }
     }
 
-
     /**
-     * TODO
-     *
+     * Logout a user by erasing currently stored information on them
+     * from repository memory and datastore.
      */
     override suspend fun logout() {
         Log.d(Tags.TempLogger.tag, "Logging out")
@@ -234,15 +101,13 @@ class RepositoryImplementation (
     }
 
     /**
-     * Post a register request to the [mainApi]
-     * that consists of [login], [password] and [displayName]
+     * Post a register request to the API
+     * that consists of already availability verified [login], [password] and [displayName].
      */
     override suspend fun register(login: String, password: String, displayName: String) {
         Log.d(Tags.TempLogger.tag, "Registering")
 
         try{
-
-
             val res = mainApi.registerUser(RegisterData(login, password, displayName))
 
             if (res.isSuccessful) {
@@ -261,41 +126,7 @@ class RepositoryImplementation (
     }
 
     /**
-     * TODO
-     *
-     * @param newDisplayName
-     */
-    override suspend fun changeDisplayName(newDisplayName: String): Boolean {
-        val userID = currentUser.id
-        Log.d(Tags.RepositoryLogger.tag, "Changing display name to $newDisplayName for $userID")
-        try{
-            val res = mainApi.changeDisplayName(DisplayNameUpdateData(userID, newDisplayName))
-            if (res.isSuccessful){
-                Log.d(Tags.RepositoryLogger.toString(), "Name change success")
-
-                updateDisplayName(newDisplayName)
-                return true
-
-            } else {
-                Log.d(Tags.RepositoryLogger.toString(), "Name change failure")
-                return false
-            }
-        } catch (e: Exception) {
-            Log.e(Tags.NetworkLogger.tag, e.message.toString())
-            return false
-        }
-
-    }
-
-    private suspend fun updateDisplayName(newDisplayName: String){
-        currentUser = currentUser.copy(displayName = newDisplayName)
-        saveAuthDataStore(displayName = newDisplayName)
-    }
-
-
-    /**
-     * TODO
-     *
+     * Login a user anonymously, making the app usable, but without certain features.
      */
     override suspend fun continueWithoutLogin() {
         Log.d(Tags.TempLogger.tag, "Logging in anonymously")
@@ -305,17 +136,15 @@ class RepositoryImplementation (
     }
 
     /**
-     * TODO
-     *
-     * @param login
-     * @return
+     * Check [login]'s current availability by making an API call.
+     * Returns [Boolean]? that is true if login is occupied, false if it is available
+     * and null if this data if currently unavailable. (e.g. API encountered a network error).
      */
     override suspend fun checkIfLoginExists(login: String): Boolean? {
         Log.d(Tags.TempLogger.tag, "Checking login availability")
 
         try {
             val res = mainApi.checkLogin(login)
-            // TODO naming of this function is clusterfucked
 
             if (res.isSuccessful){
                 return res.body()!!.UserExists
@@ -324,8 +153,161 @@ class RepositoryImplementation (
             Log.e(Tags.NetworkLogger.tag, e.message.toString())
         }
         return null
-
     }
+
+    /**
+     * Change user's current display name to a desired [newDisplayName] by making an API call.
+     * Returns [Boolean] whether the update operation was successful.
+     */
+    override suspend fun changeDisplayName(newDisplayName: String): Boolean {
+        val userID = currentUser.id
+        Log.d(Tags.RepositoryLogger.tag, "Changing display name to $newDisplayName for $userID")
+        try{
+            val res = mainApi.changeDisplayName(DisplayNameUpdateData(userID, newDisplayName))
+            return if (res.isSuccessful){
+                Log.d(Tags.RepositoryLogger.toString(), "Name change success")
+
+                updateDisplayName(newDisplayName)
+                true
+
+            } else {
+                Log.d(Tags.RepositoryLogger.toString(), "Name change failure")
+                false
+            }
+        } catch (e: Exception) {
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+            return false
+        }
+    }
+
+
+    /**
+     * Retrieve all toilets from the API,
+     * (currently really all toilets, regardless of the distance to user).
+     * Returns a [List] of [Toilet]s containing all stored toilets
+     * or null, if this data if currently unavailable. (e.g. API encountered a network error).
+     */
+    override suspend fun retrieveToilets(): List<Toilet>? {
+        Log.d(Tags.TempLogger.tag, "Retrieving toilets")
+        try{
+            val toilets = mainApi.getToilets()
+
+            if (toilets.isSuccessful){
+                val mappedToilets = toilets.body()!!.map { apiToilet -> fromApiToilet(apiToilet) }
+                return mappedToilets.map { toilet ->  toilet.copy(authorName = retrieveUsernameById(toilet.authorId))}
+            }
+        } catch (e: Exception){
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+        }
+        return null
+    }
+
+    /**
+     * Retrieve a toilet with a given [id] from the API.
+     * Returns [Toilet] if a toilet with a given [id] was found
+     * or null if not or in case of network error.
+     */
+    override suspend fun retrieveToiletById(id: Int): Toilet? {
+        Log.d(Tags.TempLogger.tag, "Retrieving toilet by id")
+
+        try {
+            val toilet = mainApi.getToiletById(id)
+
+            if (toilet.isSuccessful) {
+                return fromApiToilet(toilet.body()!!)
+            }
+
+        } catch (e: Exception){
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+        }
+        return null
+    }
+
+    /**
+     * Retrieve a user with a given [id] from the API.
+     * Returns [User] if a user with a given [id] was found
+     * or null if not or in case of network error.
+     */
+    override suspend fun retrieveUserById(id: Int): User? {
+        Log.d(Tags.TempLogger.tag, "Retrieving user by id")
+
+        try{
+            val user = mainApi.getUserById(id)
+            if (user.isSuccessful){
+                return fromApiUser(user.body()!!)
+            }
+        } catch (e: Exception){
+            Log.e(Tags.RepositoryLogger.toString(), "User by id not found")
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+        }
+
+        return null
+    }
+
+    /**
+     * Create a new toilet by making an API call.
+     * Requires a [Toilet] class instance with all the data of the new toilet.
+     */
+    override suspend fun createToilet(toilet: Toilet) {
+        Log.d(Tags.TempLogger.tag, "Creating toilet")
+
+        try{
+            val res = mainApi.createToilet(toApiToilet(toilet))
+
+            if (!res.isSuccessful){
+                Log.d(Tags.RepositoryLogger.tag, res.body().toString())
+                throw Exception("Toilet creation error!")
+            }
+
+        } catch (e: Exception){
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+            throw e
+        }
+    }
+
+    /**
+     * Save user's dark mode preference to [DataStore]. Requires [newDarkModeSetting].
+     */
+    override suspend fun saveDarkModeDataStore(newDarkModeSetting: DarkModeStatus) {
+        dataStore.edit {
+            it[intPreferencesKey(DataStoreKeys.DarkMode.key)] = newDarkModeSetting.ordinal
+            Log.d(Tags.RepositoryLogger.toString(), "Saved dark mode to $newDarkModeSetting")
+        }
+    }
+
+    /**
+     * Load user's dark mode preference from [DataStore] into repository memory.
+     */
+    override suspend fun loadDarkModeDataStore(){
+        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.DarkMode.key)] ?: 0
+        darkMode = id
+    }
+
+    /**
+     * Save user's map style preference to [DataStore]. Requires [newMapStyle].
+     */
+    override suspend fun saveMapStyleDataStore(newMapStyle: MapStyle) {
+        dataStore.edit {
+            it[intPreferencesKey(DataStoreKeys.MapStyle.key)] = newMapStyle.ordinal
+            Log.d(Tags.RepositoryLogger.toString(), "Saved map style to $newMapStyle")
+        }
+    }
+
+    /**
+     * Load user's map style preference from [DataStore] into repository memory.
+     */
+    override suspend fun loadMapStyleDataStore() {
+        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.MapStyle.key)] ?: 0
+        Log.d(Tags.RepositoryLogger.tag, "Loading map style: $id")
+
+        mapStyle = id
+    }
+
+    /**
+     * Post a new review to the API.
+     * Review's [rating], optional [reviewText] and [toiletId] are required.
+     * Returns a [Boolean] indicating whether posting a review was successful.
+     */
     override suspend fun postToiletReview(rating: Int, reviewText: String?, toiletId: Int): Boolean {
         Log.d(Tags.RepositoryLogger.tag, "Posting review")
 
@@ -344,6 +326,10 @@ class RepositoryImplementation (
         return false
     }
 
+    /**
+     * Retrieve all reviews of a toilet with a given [toiletId] from the API.
+     * Returns [List] of [ApiReview]s if a toilet with a given [toiletId] was found or null if not.
+     */
     override suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview>? {
         Log.d(Tags.RepositoryLogger.tag, "Getting reviews by id")
         try {
@@ -363,47 +349,37 @@ class RepositoryImplementation (
         return null
     }
 
+    // Private functions ------------------------------
+
     /**
-     * TODO
-     *
-     * @param newDarkModeSetting
+     * Update display name that is currently in repository memory to [newDisplayName]
+     * and also store it to persistent [DataStore].
+     * To be called only after successfully saving the [newDisplayName] serverside!
      */
-    override suspend fun saveDarkModeDataStore(newDarkModeSetting: DarkModeStatus) {
-        dataStore.edit {
-            it[intPreferencesKey(DataStoreKeys.DarkMode.key)] = newDarkModeSetting.ordinal
-            Log.d(Tags.RepositoryLogger.toString(), "Saved dark mode to $newDarkModeSetting")
-        }
+    private suspend fun updateDisplayName(newDisplayName: String){
+        currentUser = currentUser.copy(displayName = newDisplayName)
+        saveAuthDataStore(displayName = newDisplayName)
     }
 
+
     /**
-     * TODO
-     *
+     * A wrapper for the [retrieveUserById]
+     * that only returns user's display name or "Error" in case of some error.
      */
-    override suspend fun loadDarkModeDataStore(){
-        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.DarkMode.key)] ?: 0
-        darkMode = id
+    private suspend fun retrieveUsernameById(id: Int): String{
+        Log.d(Tags.TempLogger.tag, "Retrieving username by id")
+
+        // Error handling not needed since it already is in retrieveUserById
+        val user = retrieveUserById(id)
+
+        return user?.displayName ?: "Error"
     }
-
-    override suspend fun saveMapStyleDataStore(newMapStyle: MapStyle) {
-        dataStore.edit {
-            it[intPreferencesKey(DataStoreKeys.MapStyle.key)] = newMapStyle.ordinal
-            Log.d(Tags.RepositoryLogger.toString(), "Saved map style to $newMapStyle")
-        }
-    }
-
-    override suspend fun loadMapStyleDataStore() {
-        val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.MapStyle.key)] ?: 0
-        Log.d(Tags.RepositoryLogger.tag, "Loading map style: $id")
-
-        mapStyle = id
-    }
-
 
 
 
     /**
-     * TODO
-     *
+     * Save new [LocalUser] data to [DataStore] and update repository memory.
+     * Allows only certain variables to be updated while leaving others same.
      * @param id
      * @param isLoggedIn
      * @param displayName
@@ -420,40 +396,31 @@ class RepositoryImplementation (
             dataStore.edit {
                 it[intPreferencesKey(DataStoreKeys.UserID.key)] = id
                 Log.d(Tags.RepositoryLogger.toString(), "Saved id")
-
             }
         }
         if (isLoggedIn != null) {
             dataStore.edit {
                 it[booleanPreferencesKey(DataStoreKeys.IsLoggedIn.key)] = isLoggedIn
                 Log.d(Tags.RepositoryLogger.toString(), "Saved isLoggedIn")
-
             }
         }
         if (displayName != null) {
             dataStore.edit {
                 it[stringPreferencesKey(DataStoreKeys.DisplayName.key)] = displayName
                 Log.d(Tags.RepositoryLogger.toString(), "Saved name")
-
             }
         }
         if (creationDate != null) {
             dataStore.edit {
                 it[stringPreferencesKey(DataStoreKeys.CreationDate.key)] = creationDate
                 Log.d(Tags.RepositoryLogger.toString(), "Saved date")
-
             }
-
         }
-
         loadCurrentUser()
-
     }
 
-
     /**
-     * TODO
-     *
+     * Clear currently saved [LocalUser] from [DataStore] and from repository memory.
      */
     private suspend fun clearAuthDataStore(){
         dataStore.edit {
@@ -471,13 +438,12 @@ class RepositoryImplementation (
         dataStore.edit {
             it[stringPreferencesKey(DataStoreKeys.CreationDate.key)] = "2023-01-01"
         }
-        loadCurrentUser()
 
+        loadCurrentUser()
     }
 
     /**
-     * TODO
-     *
+     * Load current [LocalUser] from [DataStore] to repository memory.
      */
     private suspend fun loadCurrentUser(){
         val id = dataStore.data.first()[intPreferencesKey(DataStoreKeys.UserID.key)] ?: 0
@@ -489,6 +455,29 @@ class RepositoryImplementation (
         currentUser.isLoggedIn = isLoggedIn
         currentUser.displayName = displayName
         currentUser.creationDate = creationDate
+    }
+
+    /**
+     * A part of the [login] function that is responsible for making an API call
+     * and returning received [LoginResponse] (or null in case of an error)
+     * to then be saved in repository memory.
+     */
+    private suspend fun checkLogin(login: String, password: String): LoginResponse? {
+        Log.d(Tags.TempLogger.tag, "Checking login")
+
+        try{
+            val res = mainApi.loginUser(LoginData(login, password))
+            Log.d(Tags.RepositoryLogger.toString(), "$res, ${res.isSuccessful}, ${res.body()}")
+
+            if (res.isSuccessful){
+                val user = res.body()!!
+                Log.d(Tags.RepositoryLogger.toString(), res.body()!!.toString())
+                return user
+            }
+        } catch (e: Exception){
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+        }
+        return null
     }
 }
 

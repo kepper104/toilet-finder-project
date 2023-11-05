@@ -56,7 +56,6 @@ fun DetailsScreen() {
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
     Log.d(Tags.CompositionLogger.toString(), "Composing details screen")
     Column (
-//        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top,
         modifier = Modifier
             .fillMaxSize()

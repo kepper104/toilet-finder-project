@@ -21,10 +21,13 @@ import javax.inject.Singleton
 
 
 // Currently used backend IP
-const val SERVER_IP = "http://79.120.9.3:5010"
-//const val SERVER_IP = "http://kepper104.fun:5010"
+const val SERVER_IP = "http://79.120.9.3:5010" // Ilya server
+//const val SERVER_IP = "http://kepper104.fun:5010" // Kirill server
 
-
+/**
+ * Dagger Hilt managed DI class
+ * containing injection rules for [Repository], [MainApi] and [DataStore]
+ */
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {

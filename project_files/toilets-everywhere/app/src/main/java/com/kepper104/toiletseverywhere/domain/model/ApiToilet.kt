@@ -1,9 +1,25 @@
 package com.kepper104.toiletseverywhere.domain.model
 
+// TODO update ApiToilet class to include toilet rating and stuff
 /**
- * TODO
+ * Class with data of a [Toilet] that uses primitives, is received from the API .
+ * Everything, including [author_name_], [average_rating_] and [review_count_]
+ * is received in a single API call.
+ * (i.e. additional calls for retrieving data
+ * not stored directly in the 'toilets_' table are not needed)\
  *
- *
+ * @property id_
+ * @property author_id_
+ * @property coordinates_
+ * @property place_name_
+ * @property is_public_
+ * @property disabled_access_
+ * @property baby_access_
+ * @property parking_nearby_
+ * @property creation_date_
+ * @property opening_time_
+ * @property closing_time_
+ * @property cost_
  */
 data class ApiToilet (
     val id_: Int = 0,

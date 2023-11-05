@@ -48,7 +48,6 @@ import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
 import com.kepper104.toiletseverywhere.data.NavigationEvent
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
-import com.kepper104.toiletseverywhere.data.makeToast
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.ui.screen.NavGraphs
 import com.kepper104.toiletseverywhere.presentation.ui.screen.appCurrentDestinationAsState
@@ -481,4 +480,11 @@ fun ConfirmActionAlertDialog(
             }
         }
     )
+}
+
+/**
+ * Display a toast with given [message] and display [length] in a [context].
+ */
+fun makeToast(message: String, context: Context, length: Int){
+    Toast.makeText(context, message, length).show()
 }

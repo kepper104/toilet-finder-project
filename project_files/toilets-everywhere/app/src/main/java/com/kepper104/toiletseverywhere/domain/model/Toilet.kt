@@ -5,9 +5,22 @@ import java.time.LocalDate
 import java.time.LocalTime
 
 /**
- * TODO
+ * Class containing data of a toilet.
+ * The class is usually constructed from an [ApiToilet] class instance using a converter.
  *
- *
+ * @property id
+ * @property authorId
+ * @property coordinates
+ * @property placeName
+ * @property isPublic
+ * @property disabledAccess
+ * @property babyAccess
+ * @property parkingNearby
+ * @property creationDate
+ * @property openingTime
+ * @property closingTime
+ * @property cost
+ * @property authorName
  */
 data class Toilet(
     val id: Int = 0,

@@ -10,8 +10,8 @@ import retrofit2.http.POST
 import retrofit2.http.Path
 
 /**
- * TODO
- *
+ * Interface for retrofit api framework to interact with python serverside backend,
+ * needs to be injected by dagger hilt.
  */
 interface MainApi {
 
@@ -48,10 +48,7 @@ interface MainApi {
 }
 
 /**
- * TODO
- *
- * @property login
- * @property password
+ * Request data to be sent to log in. [login] and [password] are both required.
  */
 data class LoginData(
     val login: String,
@@ -59,11 +56,8 @@ data class LoginData(
 )
 
 /**
- * TODO
- *
- * @property login
- * @property password
- * @property display_name
+ * Request data to be sent to register a new user.
+ * Availability verified [login], [display_name] and [password] are all required.
  */
 data class RegisterData(
     val login: String,
@@ -72,11 +66,8 @@ data class RegisterData(
 )
 
 /**
- * TODO
- *
- * @property id_
- * @property display_name_
- * @property creation_date_
+ * Response data for view-model that contains account's [id_], [display_name_] and [creation_date_]
+ * if the login + password have been correctly verified.
  */
 data class LoginResponse(
     val id_: Int,
@@ -85,34 +76,34 @@ data class LoginResponse(
 )
 
 /**
- * TODO
- *
- * @property UserExists
+ * Response data that contains information about given login availability.
+ * [UserExists] is a [Boolean]
  */
 data class LoginCheckResponse(
     val UserExists: Boolean
 )
 
 /**
- * TODO
- *
- * @property Message
+ * Response that contains an info [Message] with text for humans
+ * that is sent when request was successful.
  */
 data class MessageResponse(
     val Message: String
 )
 
 /**
- * TODO
- *
- * @property user_id
- * @property new_name
+ * Request data used for changing user's display name.
+ * Current [user_id] and desired [new_name] are required.
  */
 data class DisplayNameUpdateData(
     val user_id: Int,
     val new_name: String
 )
 
+/**
+ * Request data used for posting a new toilet review.
+ * [toilet_id_], author's [user_id_], selected [rating_] and optional [review_text_] are required.
+ */
 data class ToiletReviewData(
     val toilet_id_: Int,
     val user_id_: Int,
@@ -121,11 +112,4 @@ data class ToiletReviewData(
 )
 
 
-// TODO change json variable names to kotlin conventions and add @JSON stuff for incoming json names
-// RESPONSES AND API STUFF
-
-// LoginResponse(id_=5, display_name_=Keril, creation_date_=2023-08-24)
-
-
-// if correct  Response{protocol=http/1.1, code=200, message=OK, url=http://kepper104.fun:5010/users/login}, true, LoginResponse(result=true)
-// else  Response{protocol=http/1.1, code=404, message=NOT FOUND, url=http://kepper104.fun:5010/users/login}, false, null
+// TODO maybe change json variable names to kotlin conventions and add @JSON stuff for incoming json names

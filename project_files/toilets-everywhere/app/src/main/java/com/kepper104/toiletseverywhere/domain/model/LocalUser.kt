@@ -1,8 +1,9 @@
 package com.kepper104.toiletseverywhere.domain.model
 
+// TODO lmao, change shall to should
 /**
- * TODO
- *
+ * Class containing data on the user currently using the app.
+ * [isLoggedIn] shall be true when class is in use.
  */
 data class LocalUser (
     var id: Int = 0,

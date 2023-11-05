@@ -17,14 +17,12 @@ import com.kepper104.toiletseverywhere.presentation.ui.screen.destinations.Setti
 
 // Constants
 const val NOT_LOGGED_IN_STRING = "NOTLOGGEDIN"
-const val APP_LAUNCH_INIT_DELAY = 500L
+const val APP_LAUNCH_INIT_DELAY = 500L // UNUSED
 const val MIN_PASSWORD_LENGTH = 8
 
 
 /**
- * TODO
- *
- * @property errorMessage
+ * All possible registration [errorMessage]s to be shown to user.
  */
 enum class RegistrationError (val errorMessage: String){
     PASSWORD_TOO_SHORT ("Password must be at least $MIN_PASSWORD_LENGTH symbols!"),
@@ -40,20 +38,15 @@ enum class RegistrationError (val errorMessage: String){
 }
 
 /**
- * TODO
- *
+ * All possible login statuses.
  */
 enum class LoginStatus{
     None, Success, Fail, Processing
 }
 
 /**
- * TODO
- *
- * @property direction
- * @property iconUnselected
- * @property iconSelected
- * @property label
+ * All main app destinations (menus) shown on the bottom nav bar. Each destination contains data on
+ * [direction] - composable to show, [iconUnselected], [iconSelected] and [label] for nav bar.
  */
 enum class BottomBarDestination(
     val direction: DirectionDestination,
@@ -68,17 +61,14 @@ enum class BottomBarDestination(
 
 
 /**
- * TODO
- *
+ * Current screen status on the starting auth screen.
  */
 enum class AuthUiStatus {
     MAIN, REGISTER, LOGIN
 }
 
 /**
- * TODO
- *
- * @property tag
+ * Tags for logging with respective [tag] labels for the logcat.
  */
 enum class Tags(val tag: String){
     MainViewModelTag("ViewModelLogger"),
@@ -91,9 +81,8 @@ enum class Tags(val tag: String){
 }
 
 /**
- * TODO
- *
- * @property icon
+ * Two icons with different colors for the google map composable.
+ * [icon] is a [BitmapDescriptor] with a HUE applied on top
  */
 enum class ToiletIcons(val icon: BitmapDescriptor){
     ToiletRed(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED)),
@@ -101,8 +90,7 @@ enum class ToiletIcons(val icon: BitmapDescriptor){
 }
 
 /**
- * TODO
- *
+ * Enum for communicating screen events (mainly toasts) from view-model to UI.
  */
 sealed class ScreenEvent{
     // TODO change into enum
@@ -118,8 +106,8 @@ sealed class ScreenEvent{
 }
 
 /**
- * TODO
- *
+ * Enum for communicating navigation events
+ * (e.g. forcing app to open a certain screen) from view-model to UI.
  */
 sealed class NavigationEvent{
     object NavigateToMap: NavigationEvent()
