@@ -1,5 +1,6 @@
 package com.kepper104.toiletseverywhere.data.api
 
+import com.kepper104.toiletseverywhere.domain.model.ApiReview
 import com.kepper104.toiletseverywhere.domain.model.ApiToilet
 import com.kepper104.toiletseverywhere.domain.model.ApiUser
 import retrofit2.Response
@@ -39,7 +40,10 @@ interface MainApi {
     suspend fun changeDisplayName(@Body displayNameUpdateData: DisplayNameUpdateData): Response<MessageResponse>
 
     @POST("/reviews")
-    suspend fun postToiletReview(@Body)
+    suspend fun postToiletReview(@Body reviewData: ToiletReviewData): Response<MessageResponse>
+
+    @GET("/reviews/{id}")
+    suspend fun getReviewsById(@Path("id") toiletId: Int): Response<List<ApiReview>>
 
 }
 
@@ -113,8 +117,10 @@ data class ToiletReviewData(
     val toilet_id: Int,
     val user_id: Int,
     val stars_number: Int,
-    val review_text: String?
+    val review_text: String?,
 )
+
+
 
 
 

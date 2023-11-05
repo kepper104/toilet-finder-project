@@ -325,6 +325,28 @@ class RepositoryImplementation (
         return null
 
     }
+    override suspend fun postToiletReview(rating: Int, reviewText: String?) {
+//        mainApi.postToiletReview()
+    }
+
+    override suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview>? {
+        Log.d(Tags.RepositoryLogger.tag, "Getting reviews by id")
+        try {
+            val res = mainApi.getReviewsById(toiletId)
+
+            if (res.isSuccessful){
+                for (apiReview in res.body()!!) {
+                    Log.d(Tags.RepositoryLogger.tag, apiReview.toString())
+
+                }
+                return res.body()!!
+            }
+        } catch (e: Exception) {
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+
+        }
+        return null
+    }
 
     /**
      * TODO
@@ -361,13 +383,7 @@ class RepositoryImplementation (
         mapStyle = id
     }
 
-    override suspend fun postToiletReview(rating: Int, reviewText: String?) {
 
-    }
-
-    override suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview> {
-        TODO("Not yet implemented")
-    }
 
 
     /**

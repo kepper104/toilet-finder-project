@@ -4,7 +4,7 @@ data class ApiReview (
     val id_: Int = 0,
     val toilet_id_: Int = 0,
     val user_id_: Int = 0,
-    val stars_: Int = 0,
-    val review_: String? = null,
-    val user_display_name: String = "ERROR"
+    val rating_: Int = 0,
+    val review_text_: String? = null,
+    val user_display_name_: String = "ERROR"
 )

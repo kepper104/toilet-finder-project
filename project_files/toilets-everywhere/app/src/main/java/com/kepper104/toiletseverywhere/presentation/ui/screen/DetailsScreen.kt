@@ -2,16 +2,15 @@ package com.kepper104.toiletseverywhere.presentation.ui.screen
 
 import android.util.Log
 import androidx.activity.ComponentActivity
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessible
 import androidx.compose.material.icons.filled.BabyChangingStation
@@ -82,6 +81,24 @@ fun DetailsScreen() {
                 .align(Alignment.CenterHorizontally)
         )
 
+        if (mainViewModel.toiletViewDetailsState.allReviewsMenuOpen){
+            mainViewModel.toiletViewDetailsState.reviews.forEach {
+                Log.d(Tags.TempLogger.tag, it.review.toString())
+                ReviewCard(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth()
+                        .padding(horizontal = 30.dp),
+                    authorName = it.userDisplayName,
+                    rating = it.rating,
+                    text = it.review
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+            return
+        }
+
+
 
         Row {
             Text(
@@ -128,20 +145,28 @@ fun DetailsScreen() {
             }
         }
 
-        Text(text = "Most recent review")
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 30.dp)
-//                .border(10.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-//        ) {
-        ReviewCard(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .fillMaxWidth()
-                .padding(horizontal = 30.dp)
+        Text(text = "Most recent reviews")
 
-        )
+        Column(
+            modifier = Modifier.clickable { mainViewModel.openAllReviews() }
+        ){
+            val allReviews = mainViewModel.toiletViewDetailsState.reviews
+            val reviewsToShow = if (allReviews.size <= 1) allReviews else allReviews.subList(0, 1)
+            reviewsToShow.forEach {
+                Log.d(Tags.TempLogger.tag, it.review.toString())
+                ReviewCard(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .fillMaxWidth()
+                        .padding(horizontal = 30.dp),
+                    authorName = it.userDisplayName,
+                    rating = it.rating,
+                    text = it.review
+                )
+                Spacer(modifier = Modifier.height(10.dp))
+            }
+        }
+
 //        }
         Text(text = "Have you been here? Leave a review!")
 //        Box(
@@ -152,7 +177,7 @@ fun DetailsScreen() {
 //        ) {
 //            RatingBar(clickable = true)
 //        }
-        LeaveReviewCard(viewModel = mainViewModel, modifier = Modifier.padding(10.dp))
+        PostReviewCard(viewModel = mainViewModel, modifier = Modifier.padding(10.dp).fillMaxWidth())
 
 //        Spacer(modifier = Modifier.weight(1f))
         Button(onClick = { mainViewModel.moveCameraToToiletLocation(toilet = toilet) }) {
@@ -174,7 +199,7 @@ fun DetailsScreen() {
 }
 
 @Composable
-fun ReviewCard(modifier: Modifier = Modifier) {
+fun ReviewCard(modifier: Modifier = Modifier, authorName: String, rating: Int, text: String?) {
     Card(
         modifier = modifier
     ) {
@@ -182,12 +207,14 @@ fun ReviewCard(modifier: Modifier = Modifier) {
             modifier = Modifier.padding(10.dp)
         ) {
             Row{
-                Text(text = "Kirill")
+                Text(text = authorName)
                 Spacer(modifier = Modifier.weight(1f))
-                RatingBar(rating = 3.0)
-//            Icon(imageVector = Icons.Default.StarRate, contentDescription = "Star symbol")
+                RatingBar(rating = rating.toDouble())
             }
-            Text(text = "Impressive, very nice")
+            if (text != null){
+                Text(text = text)
+
+            }
 
         }
     }
@@ -195,7 +222,7 @@ fun ReviewCard(modifier: Modifier = Modifier) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LeaveReviewCard(
+fun PostReviewCard(
     viewModel: MainViewModel,
     modifier: Modifier = Modifier
 ) {
@@ -203,19 +230,12 @@ fun LeaveReviewCard(
         modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(10.dp)
+            modifier = Modifier.padding(10.dp).fillMaxWidth()
         ) {
             Text(text = "Select your rating:  ")
+
             ClickableRatingBar(viewModel = viewModel)
 
-//            Row{
-//                Column {
-//                    Text(text = viewModel.loggedInUserState.currentUserName)
-//
-//                }
-//                Spacer(modifier = Modifier.weight(1f))
-//            }
-//            Text(text = "Impressive, very nice")
             TextField(
                 value = viewModel.toiletViewDetailsState.currentReviewText,
                 onValueChange = {
@@ -224,7 +244,7 @@ fun LeaveReviewCard(
                 },
                 placeholder = { Text(text = "If you want to, briefly describe your experience here")}
             )
-            Button(onClick = { /*TODO*/ }) {
+            Button(onClick = { viewModel.postToiletReview() }) {
                 Text(text = "Post review")
             }
 
@@ -286,7 +306,7 @@ fun ClickableRatingBar(
 @Preview
 @Composable
 fun ReviewCardPreview() {
-    ReviewCard()
+    ReviewCard(authorName = "Kirill", rating = 3, text = "Impressive, very nice")
 }
 
 //@Preview

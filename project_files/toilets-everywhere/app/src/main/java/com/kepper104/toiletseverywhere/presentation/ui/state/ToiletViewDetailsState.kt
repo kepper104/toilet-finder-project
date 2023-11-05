@@ -1,13 +1,11 @@
 package com.kepper104.toiletseverywhere.presentation.ui.state
 
+import com.kepper104.toiletseverywhere.domain.model.Review
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 
 /**
  * TODO
  *
- * @property toilet
- * @property currentDetailScreen
- * @property authorName
  */
 data class ToiletViewDetailsState (
     val toilet: Toilet? = null,
@@ -15,7 +13,9 @@ data class ToiletViewDetailsState (
     val authorName: String = "None",
     val selectedRating: Int = 5,
     val currentReviewText: String = "",
-    val reviewPostConfirmationDialogOpen: Boolean = false
+    val reviewPostConfirmationDialogOpen: Boolean = false,
+    val reviews: List<Review> = emptyList(),
+    val allReviewsMenuOpen: Boolean = false
 )
 
 /**

@@ -61,9 +61,15 @@ fun ListScreen(
     ) {
 
         if (mainViewModel.toiletViewDetailsState.currentDetailScreen == CurrentDetailsScreen.LIST){
-            BackHandler (
-                onBack = {Log.d("BackLogger", "Handled back from MAP"); mainViewModel.leaveToiletViewDetailsScreen()}
-            )
+            if (mainViewModel.toiletViewDetailsState.allReviewsMenuOpen){
+                BackHandler (
+                    onBack = { mainViewModel.closeAllReviews()}
+                )
+            } else {
+                BackHandler (
+                    onBack = {Log.d("BackLogger", "Handled back from MAP"); mainViewModel.leaveToiletViewDetailsScreen()}
+                )
+            }
             DetailsScreen()
             return
         }

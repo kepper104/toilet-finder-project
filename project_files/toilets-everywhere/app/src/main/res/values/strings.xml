@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Toilets Everywhere</string>
+    <string name="toilet_map">Toilet Map</string>
+
 </resources>

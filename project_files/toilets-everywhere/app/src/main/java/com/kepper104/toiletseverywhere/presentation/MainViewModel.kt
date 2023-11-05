@@ -20,6 +20,7 @@ import com.kepper104.toiletseverywhere.data.NavigationEvent
 import com.kepper104.toiletseverywhere.data.RegistrationError
 import com.kepper104.toiletseverywhere.data.ScreenEvent
 import com.kepper104.toiletseverywhere.data.Tags
+import com.kepper104.toiletseverywhere.data.fromApiReview
 import com.kepper104.toiletseverywhere.data.getToiletDistanceMeters
 import com.kepper104.toiletseverywhere.data.getToiletOpenString
 import com.kepper104.toiletseverywhere.data.toToiletMarker
@@ -141,8 +142,18 @@ class MainViewModel @Inject constructor(
     }
 
 
-    fun postToiletReview(){
 
+    fun openAllReviews(){
+        toiletViewDetailsState = toiletViewDetailsState.copy(allReviewsMenuOpen = true)
+    }
+
+    fun closeAllReviews(){
+        toiletViewDetailsState = toiletViewDetailsState.copy(allReviewsMenuOpen = false)
+    }
+    fun postToiletReview(){
+        viewModelScope.launch {
+            repository.postToiletReview(toiletViewDetailsState.selectedRating, if (toiletViewDetailsState.currentReviewText == "") null else toiletViewDetailsState.currentReviewText)
+        }
     }
 
 
@@ -550,10 +561,15 @@ class MainViewModel @Inject constructor(
             val author = repository.retrieveUserById(toilet.authorId)
             val authorName = author?.displayName ?: "Error"
 
+            val apiReviews = repository.retrieveToiletReviewsById(toilet.id) ?: emptyList()
+
+            val reviews = apiReviews.map { apiReview -> fromApiReview(apiReview) }
+
             toiletViewDetailsState = toiletViewDetailsState.copy(
                 toilet = toilet,
                 currentDetailScreen = source,
-                authorName = authorName
+                authorName = authorName,
+                reviews = reviews
             )
         }
     }

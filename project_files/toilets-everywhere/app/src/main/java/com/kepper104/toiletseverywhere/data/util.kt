@@ -5,8 +5,10 @@ import android.location.Location
 import android.widget.Toast
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.LatLng
+import com.kepper104.toiletseverywhere.domain.model.ApiReview
 import com.kepper104.toiletseverywhere.domain.model.ApiToilet
 import com.kepper104.toiletseverywhere.domain.model.ApiUser
+import com.kepper104.toiletseverywhere.domain.model.Review
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.domain.model.User
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletMarker
@@ -105,13 +107,24 @@ fun toToiletMarker(toilet: Toilet): ToiletMarker{
  * @param apiUser
  * @return
  */
-fun fromApiUser(apiUser: ApiUser): User{
+fun fromApiUser(apiUser: ApiUser): User {
     val creationDate: LocalDate = LocalDate.parse(apiUser.creation_date_, dateFormatter)
 
     return User(
         id = apiUser.id_,
         displayName = apiUser.display_name_,
         creationDate = creationDate
+    )
+}
+
+fun fromApiReview(apiReview: ApiReview): Review {
+    return Review(
+        id = apiReview.id_,
+        toiletId = apiReview.toilet_id_,
+        userId = apiReview.user_id_,
+        rating = apiReview.rating_,
+        review = apiReview.review_text_,
+        userDisplayName = apiReview.user_display_name_
     )
 }
 

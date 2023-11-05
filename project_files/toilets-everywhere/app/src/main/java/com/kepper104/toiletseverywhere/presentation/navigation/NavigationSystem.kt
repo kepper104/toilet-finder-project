@@ -38,9 +38,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.kepper104.toiletseverywhere.R
 import com.kepper104.toiletseverywhere.data.BottomBarDestination
 import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
 import com.kepper104.toiletseverywhere.data.NavigationEvent
@@ -161,7 +163,7 @@ fun MapTopAppBar() {
                 }
 
                 BottomBarDestination.MapView -> {
-                    Text(text = "Toilet Map")
+                    Text(text = stringResource(R.string.toilet_map)) // FIXME  this is how to use localized strings
                 }
 
                 BottomBarDestination.ListView -> {
@@ -176,18 +178,26 @@ fun MapTopAppBar() {
 
         navigationIcon = {
             // Navigate back button for toilet details screen
-            if(destinationToDetailScreenMapping[mainViewModel.toiletViewDetailsState.currentDetailScreen] == mainViewModel.navigationState.currentDestination && mainViewModel.navigationState.currentDestination != null){
-                IconButton(onClick = { mainViewModel.leaveToiletViewDetailsScreen() }) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back")
+            if (destinationToDetailScreenMapping[mainViewModel.toiletViewDetailsState.currentDetailScreen] == mainViewModel.navigationState.currentDestination && mainViewModel.navigationState.currentDestination != null){
+                if (mainViewModel.toiletViewDetailsState.allReviewsMenuOpen){
+                    IconButton(onClick = { mainViewModel.closeAllReviews() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back")
+                    }
+                } else {
+                    IconButton(onClick = { mainViewModel.leaveToiletViewDetailsScreen() }) {
+                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back")
+                    }
                 }
             }
 
             // Navigate back button for toilet creation screen
-            if(mainViewModel.newToiletDetailsState.enabled && mainViewModel.navigationState.currentDestination == BottomBarDestination.MapView){
+            if (mainViewModel.newToiletDetailsState.enabled && mainViewModel.navigationState.currentDestination == BottomBarDestination.MapView){
                 IconButton(onClick = { mainViewModel.leaveNewToiletDetailsScreen() }) {
                     Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Go Back")
                 }
             }
+
+
 
 
         },

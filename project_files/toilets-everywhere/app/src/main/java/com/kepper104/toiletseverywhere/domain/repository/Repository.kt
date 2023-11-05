@@ -120,6 +120,6 @@ interface Repository{
     suspend fun loadMapStyleDataStore()
 
     suspend fun postToiletReview(rating: Int, reviewText: String?)
-    suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview>
+    suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview>?
 
 }
