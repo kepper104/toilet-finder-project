@@ -92,25 +92,25 @@ enum class ToiletIcons(val icon: BitmapDescriptor){
 /**
  * Enum for communicating screen events (mainly toasts) from view-model to UI.
  */
-sealed class ScreenEvent{
-    // TODO change into enum
-    object ToiletAddingEnabledToast: ScreenEvent()
-    object ToiletAddingDisabledToast: ScreenEvent()
-    object PlaceholderFunction: ScreenEvent()
-    object ToiletCreationFailToast: ScreenEvent()
-    object ToiletCreationSuccessToast: ScreenEvent()
-    object FiltersMatchNoToiletsToast: ScreenEvent()
-    object NameChangeSuccessToast: ScreenEvent()
-    object NameChangeFailToast: ScreenEvent()
-    object ReviewPostFailToast: ScreenEvent()
+
+enum class ScreenEvent{
+    ToiletAddingEnabledToast,
+    ToiletAddingDisabledToast,
+    PlaceholderFunction,
+    ToiletCreationFailToast,
+    ToiletCreationSuccessToast,
+    FiltersMatchNoToiletsToast,
+    NameChangeSuccessToast,
+    NameChangeFailToast,
+    ReviewPostFailToast,
 }
 
 /**
  * Enum for communicating navigation events
  * (e.g. forcing app to open a certain screen) from view-model to UI.
  */
-sealed class NavigationEvent{
-    object NavigateToMap: NavigationEvent()
-    object NavigateToList: NavigationEvent()
-    object NavigateToSettings: NavigationEvent()
+enum class NavigationEvent{
+    NavigateToMap,
+    NavigateToList,
+    NavigateToSettings,
 }
