@@ -330,6 +330,10 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
                 ScreenEvent.NameChangeSuccessToast -> {
                     makeToast("Name change successful", composeContext, Toast.LENGTH_SHORT)
                 }
+
+                ScreenEvent.ReviewPostFailToast -> {
+                    makeToast("An error occurred while posting the review", composeContext, Toast.LENGTH_SHORT)
+                }
             }
         }
     }

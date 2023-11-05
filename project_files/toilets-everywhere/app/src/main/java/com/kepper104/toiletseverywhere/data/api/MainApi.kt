@@ -114,14 +114,11 @@ data class DisplayNameUpdateData(
 )
 
 data class ToiletReviewData(
-    val toilet_id: Int,
-    val user_id: Int,
-    val stars_number: Int,
-    val review_text: String?,
+    val toilet_id_: Int,
+    val user_id_: Int,
+    val rating_: Int,
+    val review_text_: String?,
 )
-
-
-
 
 
 // TODO change json variable names to kotlin conventions and add @JSON stuff for incoming json names

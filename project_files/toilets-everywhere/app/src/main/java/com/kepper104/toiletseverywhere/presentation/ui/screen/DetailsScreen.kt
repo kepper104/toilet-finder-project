@@ -83,7 +83,6 @@ fun DetailsScreen() {
 
         if (mainViewModel.toiletViewDetailsState.allReviewsMenuOpen){
             mainViewModel.toiletViewDetailsState.reviews.forEach {
-                Log.d(Tags.TempLogger.tag, it.review.toString())
                 ReviewCard(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -186,8 +185,8 @@ fun DetailsScreen() {
 
         if (mainViewModel.toiletViewDetailsState.reviewPostConfirmationDialogOpen){
             ConfirmActionAlertDialog(
-                onDismissRequest = { mainViewModel.toiletViewDetailsState = mainViewModel.toiletViewDetailsState.copy(reviewPostConfirmationDialogOpen = false) },
-                onConfirmation = { /*TODO*/ },
+                onDismissRequest = { mainViewModel.closeReviewConfirmationWindow() },
+                onConfirmation = { mainViewModel.closeReviewConfirmationWindow(); mainViewModel.postToiletReview() },
                 dialogText = "Confirm posting a new toilet review",
                 icon = Icons.Default.RateReview
             )
@@ -242,12 +241,14 @@ fun PostReviewCard(
                     viewModel.toiletViewDetailsState =
                         viewModel.toiletViewDetailsState.copy(currentReviewText = it)
                 },
-                placeholder = { Text(text = "If you want to, briefly describe your experience here")}
+                placeholder = { Text(text = "If you want to, leave a text review")}
             )
-            Button(onClick = { viewModel.postToiletReview() }) {
-                Text(text = "Post review")
+            Row(modifier = Modifier.fillMaxWidth()){
+                Spacer(modifier = Modifier.weight(1f))
+                Button(onClick = { viewModel.showReviewConfirmationWindow() }) {
+                    Text(text = "Post review")
+                }
             }
-
         }
     }
 }

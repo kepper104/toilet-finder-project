@@ -15,6 +15,7 @@ import com.kepper104.toiletseverywhere.data.api.LoginData
 import com.kepper104.toiletseverywhere.data.api.LoginResponse
 import com.kepper104.toiletseverywhere.data.api.MainApi
 import com.kepper104.toiletseverywhere.data.api.RegisterData
+import com.kepper104.toiletseverywhere.data.api.ToiletReviewData
 import com.kepper104.toiletseverywhere.data.fromApiToilet
 import com.kepper104.toiletseverywhere.data.fromApiUser
 import com.kepper104.toiletseverywhere.data.toApiToilet
@@ -325,8 +326,22 @@ class RepositoryImplementation (
         return null
 
     }
-    override suspend fun postToiletReview(rating: Int, reviewText: String?) {
-//        mainApi.postToiletReview()
+    override suspend fun postToiletReview(rating: Int, reviewText: String?, toiletId: Int): Boolean {
+        Log.d(Tags.RepositoryLogger.tag, "Posting review")
+
+        try {
+            val res = mainApi.postToiletReview(ToiletReviewData(toiletId, currentUser.id, rating, reviewText))
+
+            if (res.isSuccessful) {
+                Log.d(Tags.NetworkLogger.tag, "Review post successfull")
+
+                return true
+            }
+        } catch (e: Exception) {
+            Log.e(Tags.NetworkLogger.tag, e.message.toString())
+
+        }
+        return false
     }
 
     override suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview>? {

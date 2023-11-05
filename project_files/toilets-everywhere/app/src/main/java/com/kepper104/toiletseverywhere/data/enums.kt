@@ -114,6 +114,7 @@ sealed class ScreenEvent{
     object FiltersMatchNoToiletsToast: ScreenEvent()
     object NameChangeSuccessToast: ScreenEvent()
     object NameChangeFailToast: ScreenEvent()
+    object ReviewPostFailToast: ScreenEvent()
 }
 
 /**

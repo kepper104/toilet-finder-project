@@ -150,11 +150,38 @@ class MainViewModel @Inject constructor(
     fun closeAllReviews(){
         toiletViewDetailsState = toiletViewDetailsState.copy(allReviewsMenuOpen = false)
     }
+
+    fun showReviewConfirmationWindow(){
+        toiletViewDetailsState = toiletViewDetailsState.copy(reviewPostConfirmationDialogOpen = true)
+    }
+
+    fun closeReviewConfirmationWindow(){
+        toiletViewDetailsState = toiletViewDetailsState.copy(reviewPostConfirmationDialogOpen = false)
+    }
     fun postToiletReview(){
         viewModelScope.launch {
-            repository.postToiletReview(toiletViewDetailsState.selectedRating, if (toiletViewDetailsState.currentReviewText == "") null else toiletViewDetailsState.currentReviewText)
+            toiletViewDetailsState = toiletViewDetailsState.copy(currentReviewText = toiletViewDetailsState.currentReviewText.trim())
+            val postRes = repository.postToiletReview(
+                toiletViewDetailsState.selectedRating,
+                if (toiletViewDetailsState.currentReviewText == "") null else toiletViewDetailsState.currentReviewText,
+                toiletViewDetailsState.toilet!!.id
+            )
+
+            toiletViewDetailsState = toiletViewDetailsState.copy(selectedRating = 5, currentReviewText = "")
+
+            if (postRes){
+                val toilet = toiletViewDetailsState.toilet!!
+                val currentDetailsScreen = toiletViewDetailsState.currentDetailScreen
+
+                leaveToiletViewDetailsScreen()
+                navigateToDetails(toilet, currentDetailsScreen)
+            } else {
+                _eventFlow.emit(ScreenEvent.ReviewPostFailToast)
+            }
         }
     }
+
+
 
 
     /**
@@ -563,7 +590,9 @@ class MainViewModel @Inject constructor(
 
             val apiReviews = repository.retrieveToiletReviewsById(toilet.id) ?: emptyList()
 
-            val reviews = apiReviews.map { apiReview -> fromApiReview(apiReview) }
+            val reviews = (apiReviews.map { apiReview -> fromApiReview(apiReview) }).reversed()
+
+
 
             toiletViewDetailsState = toiletViewDetailsState.copy(
                 toilet = toilet,
