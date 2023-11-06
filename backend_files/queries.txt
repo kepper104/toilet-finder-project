@@ -1,0 +1,40 @@
+CREATE TABLE users_ (
+    id_ SERIAL PRIMARY KEY,
+    display_name_ VARCHAR,
+    login_ VARCHAR UNIQUE NOT NULL,
+    password_hashed_ VARCHAR NOT NULL,
+    creation_date_ DATE NOT NULL
+);
+
+CREATE TABLE toilets_ (
+    id_ SERIAL PRIMARY KEY,
+    author_id_ INTEGER NOT NULL,
+    place_name_ VARCHAR,
+    is_public_ BOOLEAN NOT NULL,
+    disabled_access_ BOOLEAN NOT NULL,
+    baby_access_ BOOLEAN NOT NULL,
+    parking_nearby_ BOOLEAN NOT NULL,
+    creation_date_ DATE NOT NULL,
+    working_hours_ VARCHAR,
+    cost_ INTEGER NOT NULL,
+    FOREIGN KEY (author_id_) REFERENCES users_ (id_)
+);
+
+CREATE TABLE toilet_reviews_ (
+    id_ SERIAL PRIMARY KEY,
+    toilet_id_ INTEGER NOT NULL,
+    user_id_ INTEGER NOT NULL,
+    rating_ INTEGER NOT NULL,
+    review_text_ VARCHAR,
+    FOREIGN KEY (toilet_id_) REFERENCES toilets_ (id_),
+    FOREIGN KEY (user_id_) REFERENCES users_ (id_)
+);
+
+CREATE TABLE toilet_verifications_ (
+    id_ SERIAL PRIMARY KEY,
+    toilet_id_ INTEGER NOT NULL,
+    user_id_ INTEGER NOT NULL,
+    vote_ INTEGER NOT NULL,
+    FOREIGN KEY (toilet_id_) REFERENCES toilets_ (id_),
+    FOREIGN KEY (user_id_) REFERENCES users_ (id_)
+);
