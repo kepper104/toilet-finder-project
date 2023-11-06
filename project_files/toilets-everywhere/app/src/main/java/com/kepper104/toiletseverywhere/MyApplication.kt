@@ -4,8 +4,7 @@ import android.app.Application
 import dagger.hilt.android.HiltAndroidApp
 
 /**
- * TODO
- *
+ * App entry point for Dagger Hilt
  */
 @HiltAndroidApp
 class ToiletsEverywhere: Application()

@@ -1,6 +1,7 @@
 package com.kepper104.toiletseverywhere.presentation.ui.screen
 
 import android.os.Build.VERSION
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
+import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.ui.MapStyle
 import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
@@ -52,6 +54,7 @@ fun SettingsScreen(
 
 ) {
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
+    Log.d(Tags.CompositionLogger.tag, "Recomposing settings")
 
     Column(
         modifier = Modifier

@@ -30,13 +30,13 @@ import com.ramcosta.composedestinations.annotation.Destination
 @Composable
 fun WelcomeScreen() {
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
+    Log.d(Tags.CompositionLogger.tag, "Recomposing welcome")
 
     val locationPermissionState = rememberPermissionState(
         android.Manifest.permission.ACCESS_FINE_LOCATION
     )
 
 
-    // TODO proper permission management: if declined, whatever
     if (!locationPermissionState.status.isGranted) {
         LaunchedEffect(key1 = true){
             locationPermissionState.launchPermissionRequest()

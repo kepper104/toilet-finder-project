@@ -11,7 +11,7 @@ import retrofit2.http.Path
 
 /**
  * Interface for retrofit api framework to interact with python serverside backend,
- * needs to be injected by dagger hilt.
+ * needs to be injected by Dagger Hilt.
  */
 interface MainApi {
 
@@ -45,6 +45,8 @@ interface MainApi {
     @GET("/reviews/{id}")
     suspend fun getReviewsById(@Path("id") toiletId: Int): Response<List<ApiReview>>
 
+    @POST("/toilets/report")
+    suspend fun sendToiletReport(@Body toiletReportData: ToiletReportData): Response<MessageResponse>
 }
 
 /**
@@ -111,5 +113,12 @@ data class ToiletReviewData(
     val review_text_: String?,
 )
 
-
-// TODO maybe change json variable names to kotlin conventions and add @JSON stuff for incoming json names
+/**
+ * Request data used for reporting toilet misinformation.
+ * Requires current [user_id_], [toilet_id_] and [message_]
+ */
+data class ToiletReportData(
+    val user_id_: Int,
+    val toilet_id_: Int,
+    val message_: String
+)

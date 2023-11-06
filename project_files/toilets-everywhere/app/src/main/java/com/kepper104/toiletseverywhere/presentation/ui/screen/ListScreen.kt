@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessible
 import androidx.compose.material.icons.filled.BabyChangingStation
 import androidx.compose.material.icons.filled.LocalParking
+import androidx.compose.material.icons.filled.StarRate
+import androidx.compose.material3.Card
 import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +41,10 @@ import com.kepper104.toiletseverywhere.data.getToiletPriceString
 import com.kepper104.toiletseverywhere.data.getToiletWorkingHoursString
 import com.kepper104.toiletseverywhere.domain.model.Toilet
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
+import com.kepper104.toiletseverywhere.presentation.roundDouble
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
+import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
+import com.kepper104.toiletseverywhere.presentation.ui.state.SettingsState
 import com.ramcosta.composedestinations.annotation.Destination
 
 
@@ -51,8 +58,7 @@ fun ListScreen(
 
 ) {
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
-
-
+    Log.d(Tags.CompositionLogger.tag, "Recomposing list")
 
     Box(
         modifier = Modifier
@@ -89,7 +95,7 @@ fun ListScreen(
             }
             for (toilet in mainViewModel.toiletsState.filteredToiletList){
                 item{
-                    ToiletCard(toilet = toilet, navigateToDetails = mainViewModel::navigateToDetails, getToiletDistanceMeters(mainViewModel.mapState.userPosition, toilet.coordinates))
+                    ToiletCard(toilet = toilet, navigateToDetails = mainViewModel::navigateToDetails, getToiletDistanceMeters(mainViewModel.mapState.userPosition, toilet.coordinates), settingsState = mainViewModel.settingsState)
                     Spacer(modifier = Modifier.height(10.dp))
                 }
             }
@@ -104,36 +110,53 @@ fun ListScreen(
  * @param navigateToDetails
  * @param distanceToToilet
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Preview
 @Composable
-fun ToiletCard(toilet: Toilet = Toilet(), navigateToDetails: (toilet: Toilet, source: CurrentDetailsScreen) -> Unit = ::placeHolderFunc, distanceToToilet: Int = 100) {
-    Column(
-        modifier = Modifier
-            .clickable {
-                navigateToDetails(toilet, CurrentDetailsScreen.LIST)
-            }
+fun ToiletCard(toilet: Toilet = Toilet(), navigateToDetails: (toilet: Toilet, source: CurrentDetailsScreen) -> Unit = ::placeHolderFunc, distanceToToilet: Int = 100, settingsState: SettingsState = SettingsState()) {
+    Card(
+        onClick = { navigateToDetails(toilet, CurrentDetailsScreen.LIST) },
+        modifier = Modifier.padding(5.dp)
     ) {
-        Text(
-            text = getToiletNameString(toilet)
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(5.dp)
+        ) {
+            Row {
+                
+                Text(
+                    text = getToiletNameString(toilet)
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                Icon(imageVector = Icons.Default.StarRate, contentDescription = "Star")
 
-        Row{
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = "Created by ${toilet.authorName} on ${toilet.creationDate}",
-                modifier = Modifier
-            )
+                if (toilet.reviewCount == 0){
+                    Text(text = "No rating")
+                } else {
+                    Text(text = "${roundDouble(toilet.averageRating)}/5 (${toilet.reviewCount})")
+                }
 
+            }
+
+            Row{
+                Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "Created by ${toilet.authorName} on ${toilet.creationDate}",
+                    modifier = Modifier
+                )
+
+            }
+
+            Row {
+                AttributeBadge(icon = Icons.Default.LocalParking, enabled = toilet.parkingNearby, settingsState = settingsState)
+                AttributeBadge(icon = Icons.Default.Accessible, enabled = toilet.disabledAccess, settingsState = settingsState)
+                AttributeBadge(icon = Icons.Default.BabyChangingStation, enabled = toilet.babyAccess, settingsState = settingsState)
+            }
+            Text(text = "Currently ${getToiletOpenString(toilet)} (Working hours ${getToiletWorkingHoursString(toilet)})")
+            Text(text = getToiletPriceString(toilet) + ", " +  getToiletDistanceString(distanceToToilet) + " away")
         }
 
-        Row {
-            AttributeBadge(icon = Icons.Default.LocalParking, enabled = toilet.parkingNearby)
-            AttributeBadge(icon = Icons.Default.Accessible, enabled = toilet.disabledAccess)
-            AttributeBadge(icon = Icons.Default.BabyChangingStation, enabled = toilet.babyAccess)
-        }
-        Text(text = "Currently ${getToiletOpenString(toilet)} (Working hours ${getToiletWorkingHoursString(toilet)})")
-        Text(text = getToiletPriceString(toilet) + ", " +  getToiletDistanceString(distanceToToilet) + " away")
-        Divider(modifier = Modifier.fillMaxWidth())
     }
 
 }
@@ -155,11 +178,23 @@ fun placeHolderFunc(toilet: Toilet, source: CurrentDetailsScreen): Unit {
  * @param enabled
  */
 @Composable
-fun AttributeBadge(icon: ImageVector, enabled: Boolean) {
+fun AttributeBadge(icon: ImageVector, enabled: Boolean, settingsState: SettingsState) {
+
     Icon(
         imageVector = icon,
         contentDescription = icon.name,
-        tint = if (enabled) Color.White else Color.Gray
+
+        tint = if (settingsState.selectedDarkModeOption == DarkModeStatus.FORCED_ON)
+            {if (enabled) Color.White else Color.Gray}
+        else if (settingsState.selectedDarkModeOption == DarkModeStatus.FORCED_OFF){
+            if (enabled) Color.Black else Color.Gray
+        } else {
+            if (isSystemInDarkTheme())
+            {if (enabled) Color.White else Color.Gray}
+            else
+            {if (enabled) Color.Black else Color.Gray}
+        }
     )
-    
 }
+
+

@@ -103,6 +103,7 @@ enum class ScreenEvent{
     NameChangeSuccessToast,
     NameChangeFailToast,
     ReviewPostFailToast,
+    ReportSentToast,
 }
 
 /**

@@ -13,6 +13,7 @@ data class NewToiletDetailsState(
     val coordinates: LatLng = LatLng(0.0, 0.0),
     val isPublic: Boolean = true,
     val name: String = "",
+    val costString: String = "",
     val cost: Int = 0,
     val creationDate: LocalDate = LocalDate.of(2023, 1, 1),
     val openingTime: LocalTime = LocalTime.of(6, 0, 0),
@@ -20,5 +21,6 @@ data class NewToiletDetailsState(
     val disabledAccess: Boolean = false,
     val babyAccess: Boolean = false,
     val parkingNearby: Boolean = true,
+    val newToiletConfirmationDialogOpen: Boolean = false,
 
     )

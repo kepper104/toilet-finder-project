@@ -43,7 +43,9 @@ fun fromApiToilet(apiToilet: ApiToilet): Toilet {
         openingTime = openingTime,
         closingTime = closingTime,
         cost = apiToilet.cost_,
-        authorName = "ToBeRetrieved"
+        authorName = apiToilet.author_name_,
+        averageRating = apiToilet.average_rating_,
+        reviewCount = apiToilet.review_count_,
     )
 }
 
@@ -82,7 +84,7 @@ fun toToiletMarker(toilet: Toilet): ToiletMarker {
     return ToiletMarker(
         id = toilet.id,
         position = toilet.coordinates,
-        rating = 0f, // TODO get rating from separate api request
+        rating = 0f,
         isPublic = toilet.isPublic,
         toilet = toilet
     )

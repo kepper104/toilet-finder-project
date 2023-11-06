@@ -8,7 +8,6 @@ import com.kepper104.toiletseverywhere.domain.model.User
 import com.kepper104.toiletseverywhere.presentation.ui.MapStyle
 import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
 
-// TODO create a RepositoryTestImplementation and test
 /**
  * The main Repository interface to be implemented by
  * [RepositoryImplementation] for use in prod
@@ -112,5 +111,11 @@ interface Repository {
      * Returns [List] of [ApiReview]s if a toilet with a given [toiletId] was found or null if not.
      */
     suspend fun retrieveToiletReviewsById(toiletId: Int): List<ApiReview>?
+
+    /**
+     * Send a report about misinformation in toilet's info to be manually reviewed by admin.
+     * Requires [toiletId] and report [message].
+     */
+    suspend fun sendToiletReport(toiletId: Int, message: String)
 
 }

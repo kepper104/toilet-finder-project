@@ -6,6 +6,9 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Create
+import androidx.compose.material.icons.filled.RateReview
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,6 +25,7 @@ import com.kepper104.toiletseverywhere.data.getToiletOpenString
 import com.kepper104.toiletseverywhere.data.getToiletPriceString
 import com.kepper104.toiletseverywhere.data.getToiletStatusColor
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
+import com.kepper104.toiletseverywhere.presentation.navigation.ConfirmActionAlertDialog
 import com.kepper104.toiletseverywhere.presentation.ui.state.CurrentDetailsScreen
 import com.ramcosta.composedestinations.annotation.Destination
 
@@ -36,12 +40,22 @@ fun MapScreen(
 
 ) {
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
+    Log.d(Tags.CompositionLogger.tag, "Recomposing map")
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .padding(mainViewModel.scaffoldPadding),
     ) {
+
+        if (mainViewModel.newToiletDetailsState.newToiletConfirmationDialogOpen){
+            ConfirmActionAlertDialog(
+                onDismissRequest = { mainViewModel.closeNewToiletConfirmationDialog() },
+                onConfirmation = { mainViewModel.closeNewToiletConfirmationDialog(); mainViewModel.createToilet() },
+                dialogText = "Confirm creating a new toilet. The new toilet will have an 'Unverified' status for 7 days.",
+                icon = Icons.Default.Create
+            )
+        }
 
         if (mainViewModel.toiletViewDetailsState.currentDetailScreen == CurrentDetailsScreen.MAP){
             if (mainViewModel.toiletViewDetailsState.allReviewsMenuOpen){
@@ -65,9 +79,6 @@ fun MapScreen(
             return
         }
 
-        Log.d(Tags.CompositionLogger.toString(), "Composing map!, mapstate prop is ${mainViewModel.mapState.properties.mapStyleOptions.toString()}")
-
-
         GoogleMap(
             modifier = Modifier
                 .fillMaxSize(),
@@ -84,7 +95,8 @@ fun MapScreen(
             Marker(
                 state = MarkerState(position = mainViewModel.mapState.cameraPosition.position.target),
                 visible = mainViewModel.mapState.addingToilet,
-                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA)
+                icon = BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_MAGENTA),
+                onClick = {false}
             )
 
 

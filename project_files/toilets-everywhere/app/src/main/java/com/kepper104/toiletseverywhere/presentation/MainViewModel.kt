@@ -2,9 +2,12 @@ package com.kepper104.toiletseverywhere.presentation
 
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -36,7 +39,6 @@ import com.kepper104.toiletseverywhere.presentation.ui.state.NavigationState
 import com.kepper104.toiletseverywhere.presentation.ui.state.NewToiletDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.DarkModeStatus
 import com.kepper104.toiletseverywhere.presentation.ui.state.SettingsState
-import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletMarker
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletViewDetailsState
 import com.kepper104.toiletseverywhere.presentation.ui.state.ToiletsState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -45,6 +47,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import java.math.RoundingMode
+import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
@@ -70,11 +74,14 @@ class MainViewModel @Inject constructor(
     var settingsState by mutableStateOf(SettingsState())
 
 
-    private val _eventFlow = MutableSharedFlow<ScreenEvent>()
-    val eventFlow = _eventFlow.asSharedFlow()
+    private val _screenEventFlow = MutableSharedFlow<ScreenEvent>()
+    val screenEventFlow = _screenEventFlow.asSharedFlow()
 
     private val _navigationEventFlow = MutableSharedFlow<NavigationEvent>()
     val navigationEventFlow = _navigationEventFlow.asSharedFlow()
+
+    private val _messageEventFlow = MutableSharedFlow<String>()
+    val messageEventFlow = _messageEventFlow.asSharedFlow()
 
 
     private lateinit var locationClient: FusedLocationProviderClient
@@ -115,8 +122,6 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    // TODO change flows to just viewmodelscope loops with function calls
-
     private var darkModeStatusFlow = flow {
         while (repository.darkMode == -1){
             Log.d("Waiting", "dark mode still -1")
@@ -143,6 +148,21 @@ class MainViewModel @Inject constructor(
 
 
 
+    // Generic dialog opening and closing functions
+    fun closeReportDialog(){
+        toiletViewDetailsState = toiletViewDetailsState.copy(reportDialogOpen = false)
+    }
+    fun openReportDialog(){
+        toiletViewDetailsState = toiletViewDetailsState.copy(reportDialogOpen = true)
+    }
+    fun openNewToiletConfirmationDialog(){
+        newToiletDetailsState = newToiletDetailsState.copy(newToiletConfirmationDialogOpen = true)
+    }
+
+    fun closeNewToiletConfirmationDialog(){
+        newToiletDetailsState = newToiletDetailsState.copy(newToiletConfirmationDialogOpen = false)
+    }
+
     fun openAllReviews(){
         toiletViewDetailsState = toiletViewDetailsState.copy(allReviewsMenuOpen = true)
     }
@@ -151,13 +171,47 @@ class MainViewModel @Inject constructor(
         toiletViewDetailsState = toiletViewDetailsState.copy(allReviewsMenuOpen = false)
     }
 
-    fun showReviewConfirmationWindow(){
+    fun showReviewConfirmationDialog(){
         toiletViewDetailsState = toiletViewDetailsState.copy(reviewPostConfirmationDialogOpen = true)
     }
 
-    fun closeReviewConfirmationWindow(){
+    fun closeReviewConfirmationDialog(){
         toiletViewDetailsState = toiletViewDetailsState.copy(reviewPostConfirmationDialogOpen = false)
     }
+
+    fun closeNameChangeDialog() {
+        settingsState = settingsState.copy(nameChangeDialogOpen = false, newDisplayName = "")
+    }
+
+    fun showNameChangeDialog() {
+        settingsState = settingsState.copy(nameChangeDialogOpen = true)
+    }
+
+    fun toggleMapStyleSelectionMenu() {
+        settingsState = settingsState.copy(mapStyleSelectionExpanded = !settingsState.mapStyleSelectionExpanded)
+    }
+
+    fun closeMapStyleSelectionMenu() {
+        settingsState = settingsState.copy(mapStyleSelectionExpanded = false)
+    }
+
+    /**
+     * Toggle the toilet filter menu dropdown. (So open if closed and close if open).
+     */
+    fun toggleToiletFilterMenu(){
+        filterState = filterState.copy(isMenuShown = !filterState.isMenuShown)
+    }
+
+    /**
+     * Close the toilet filter menu dropdown.
+     */
+    private fun closeToiletFilterMenu(){
+        filterState = filterState.copy(isMenuShown = false)
+    }
+
+    /**
+     * Post a toilet review to the Repository
+     */
     fun postToiletReview(){
         viewModelScope.launch {
             toiletViewDetailsState = toiletViewDetailsState.copy(currentReviewText = toiletViewDetailsState.currentReviewText.trim())
@@ -167,26 +221,66 @@ class MainViewModel @Inject constructor(
                 toiletViewDetailsState.toilet!!.id
             )
 
-            toiletViewDetailsState = toiletViewDetailsState.copy(selectedRating = 5, currentReviewText = "")
+            toiletViewDetailsState = toiletViewDetailsState.copy(selectedRating = 0, currentReviewText = "")
 
             if (postRes){
-                val toilet = toiletViewDetailsState.toilet!!
+                val toiletId = toiletViewDetailsState.toilet!!.id
                 val currentDetailsScreen = toiletViewDetailsState.currentDetailScreen
 
+                redownloadToilet(toiletId, currentDetailsScreen)
+
                 leaveToiletViewDetailsScreen()
-                navigateToDetails(toilet, currentDetailsScreen)
             } else {
-                _eventFlow.emit(ScreenEvent.ReviewPostFailToast)
+                _screenEventFlow.emit(ScreenEvent.ReviewPostFailToast)
             }
         }
     }
 
+    /**
+     * Delete old info and download latest of a toilet with [toiletId]
+     * and refresh it using [currentDetailsScreen] to reopen details screen
+     */
+    private fun redownloadToilet(toiletId: Int, currentDetailsScreen: CurrentDetailsScreen){
+        val oldToiletList = toiletsState.toiletList.toMutableList()
+        var oldToilet = Toilet()
 
+        for (i in 0..toiletsState.toiletList.size){
+            if (toiletsState.toiletList[i].id == toiletId){
+                oldToilet = oldToiletList.removeAt(i)
+                break
+            }
+        }
+        viewModelScope.launch {
+            val redownloadedToilet = repository.retrieveToiletById(toiletId)
+
+            if (redownloadedToilet != null){
+                oldToiletList.add(0, redownloadedToilet)
+            } else {
+                oldToiletList.add(0, oldToilet)
+            }
+
+            toiletsState = toiletsState.copy(toiletList = oldToiletList.toList())
+
+            applyToiletFilters()
+
+            navigateToDetails(toiletsState.toiletList[0], currentDetailsScreen)
+        }
+    }
+
+    /**
+     * Send a report about currently opened toilet's misinformation.
+     */
+    fun sendToiletReport(){
+        viewModelScope.launch {
+            repository.sendToiletReport(toiletViewDetailsState.toilet!!.id, toiletViewDetailsState.reportMessage)
+
+            _screenEventFlow.emit(ScreenEvent.ReportSentToast)
+        }
+    }
 
 
     /**
-     * TODO
-     *
+     * Change user's display name in the repo and refresh it and notify user
      */
     fun changeDisplayName() {
         Log.d(Tags.MainViewModelTag.tag, "Changing name!")
@@ -196,13 +290,13 @@ class MainViewModel @Inject constructor(
             if (res) {
                 Log.d(Tags.MainViewModelTag.tag, "Changing name success")
 
-                _eventFlow.emit(ScreenEvent.NameChangeSuccessToast)
+                _screenEventFlow.emit(ScreenEvent.NameChangeSuccessToast)
 
                 loggedInUserState = loggedInUserState.copy(currentUserName = repository.currentUser.displayName)
             } else {
                 Log.d(Tags.MainViewModelTag.tag, "Changing name fail")
 
-                _eventFlow.emit(ScreenEvent.NameChangeFailToast)
+                _screenEventFlow.emit(ScreenEvent.NameChangeFailToast)
             }
             closeNameChangeDialog()
 
@@ -210,42 +304,6 @@ class MainViewModel @Inject constructor(
     }
 
 
-    /**
-     * TODO
-     *
-     */
-    fun closeNameChangeDialog() {
-        settingsState = settingsState.copy(nameChangeDialogOpen = false, newDisplayName = "")
-    }
-
-    /**
-     * TODO
-     *
-     */
-    fun showNameChangeDialog() {
-        settingsState = settingsState.copy(nameChangeDialogOpen = true)
-    }
-    /**
-     * TODO
-     *
-     */
-    fun toggleMapStyleSelectionMenu() {
-        settingsState = settingsState.copy(mapStyleSelectionExpanded = !settingsState.mapStyleSelectionExpanded)
-    }
-
-    /**
-     * TODO
-     *
-     */
-    fun closeMapStyleSelectionMenu() {
-        settingsState = settingsState.copy(mapStyleSelectionExpanded = false)
-    }
-
-    /**
-     * TODO
-     *
-     * @param newMapStyle
-     */
     fun changeSelectedMapStyle(newMapStyle: MapStyle){
 
         settingsState = settingsState.copy(selectedMapStyle = newMapStyle)
@@ -276,19 +334,7 @@ class MainViewModel @Inject constructor(
         }
     }
 
-    /**
-     * Toggle the toilet filter menu dropdown. (So open if closed and close if open).
-     */
-    fun toggleToiletFilterMenu(){
-        filterState = filterState.copy(isMenuShown = !filterState.isMenuShown)
-    }
 
-    /**
-     * Close the toilet filter menu dropdown.
-     */
-    private fun closeToiletFilterMenu(){
-        filterState = filterState.copy(isMenuShown = false)
-    }
 
     /**
      * Saves [newFilterState] into internal [filterState] to then be used for applying filters.
@@ -328,7 +374,7 @@ class MainViewModel @Inject constructor(
 
         if (toiletsState.filteredToiletList.isEmpty() && navigationState.currentDestination == BottomBarDestination.MapView){
             viewModelScope.launch {
-                _eventFlow.emit(ScreenEvent.FiltersMatchNoToiletsToast)
+                _screenEventFlow.emit(ScreenEvent.FiltersMatchNoToiletsToast)
             }
         }
     }
@@ -410,7 +456,7 @@ class MainViewModel @Inject constructor(
      */
     fun triggerEvent(event: ScreenEvent){
         viewModelScope.launch {
-            _eventFlow.emit(event)
+            _screenEventFlow.emit(event)
         }
     }
 
@@ -419,31 +465,41 @@ class MainViewModel @Inject constructor(
      * Enable showing user location on the map using given [locationProviderClient]
      */
     fun enableLocationServices(locationProviderClient: FusedLocationProviderClient){
-        mapState = mapState.copy(
-            properties = mapState.properties.copy(isMyLocationEnabled = true)
-        )
-        locationClient = locationProviderClient
-        viewModelScope.launch {
-            try{
-                Log.d(Tags.MainViewModelTag.toString(), "Getting position on LocationServices enable")
-                val res = locationClient.lastLocation
-                res.addOnSuccessListener {
+        try{
+            mapState = mapState.copy(
+                properties = mapState.properties.copy(isMyLocationEnabled = true)
+            )
+            locationClient = locationProviderClient
+            viewModelScope.launch {
+                try{
+                    Log.d(Tags.MainViewModelTag.toString(), "Getting position on LocationServices enable")
+                    val res = locationClient.lastLocation
+                    res.addOnSuccessListener {
 
-                    mapState = mapState.copy(
-                        cameraPosition = CameraPositionState(CameraPosition(LatLng(res.result.latitude, res.result.longitude), 15F, 0F, 0F)),
-                        userPosition = LatLng(res.result.latitude, res.result.longitude)
-                    )
-                    Log.d(Tags.MainViewModelTag.toString(), "Successfully got position on LocationServices enable")
-                }
-                res.addOnFailureListener{
-                    Log.e(Tags.MainViewModelTag.toString(),  it.toString())
+                        try {
+                            mapState = mapState.copy(
+                                cameraPosition = CameraPositionState(CameraPosition(LatLng(res.result.latitude, res.result.longitude), 15F, 0F, 0F)),
+                                userPosition = LatLng(res.result.latitude, res.result.longitude)
+                            )
+                            Log.d(Tags.MainViewModelTag.toString(), "Successfully got position on LocationServices enable")
+                        } catch (e: Exception) {
+                            Log.e(Tags.MainViewModelTag.toString(),  e.toString())
+                        }
+                    }
+                    res.addOnFailureListener{
+                        Log.e(Tags.MainViewModelTag.toString(),  it.toString())
+                    }
+                } catch (e: SecurityException){
+                    Log.e(Tags.MainViewModelTag.toString(), "Location permission not granted")
                 }
 
-            } catch (e: SecurityException){
-                Log.e(Tags.MainViewModelTag.toString(), "Location permission not granted")
             }
-
+        } catch (e: Exception){
+            viewModelScope.launch {
+                _messageEventFlow.emit(e.toString())
+            }
         }
+
     }
 
     /**
@@ -514,14 +570,14 @@ class MainViewModel @Inject constructor(
                     }
                     LoginStatus.Processing -> {
                         Log.d(Tags.MainViewModelTag.toString(), "Logging in...")
-                    }  // TODO maybe show a loading icon
+                    }
                 }
             }
         }
     }
 
     /**
-     * TODO
+     * Start collecting and observing new dark mode preference settings from the Repository
      *
      */
     private fun collectDarkModeStatusFlow(){
@@ -533,6 +589,10 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Start collecting and observing new map style preference settings from the Repository
+     *
+     */
     private fun collectMapStyleStatusFlow(){
         viewModelScope.launch {
             mapStyleStatusFlow.collect {mapStyleID ->
@@ -585,49 +645,32 @@ class MainViewModel @Inject constructor(
     fun navigateToDetails(toilet: Toilet, source: CurrentDetailsScreen){
         viewModelScope.launch {
             Log.d(Tags.MainViewModelTag.toString(), "Opening details: ${toilet.id}, $source")
-            val author = repository.retrieveUserById(toilet.authorId)
-            val authorName = author?.displayName ?: "Error"
 
             val apiReviews = repository.retrieveToiletReviewsById(toilet.id) ?: emptyList()
 
             val reviews = (apiReviews.map { apiReview -> fromApiReview(apiReview) }).reversed()
 
-
-
             toiletViewDetailsState = toiletViewDetailsState.copy(
                 toilet = toilet,
                 currentDetailScreen = source,
-                authorName = authorName,
+                authorName = toilet.authorName,
                 reviews = reviews
             )
         }
     }
 
-
-    /**
-     * TODO
-     *
-     */
     fun leaveToiletViewDetailsScreen(){
         Log.d(Tags.MainViewModelTag.toString(), "Leaving details screen")
         toiletViewDetailsState = toiletViewDetailsState.copy(toilet = null, currentDetailScreen = CurrentDetailsScreen.NONE)
         Log.d(Tags.MainViewModelTag.toString(), "Left details: $toiletViewDetailsState")
     }
 
-    /**
-     * TODO
-     *
-     */
     fun leaveNewToiletDetailsScreen(){
         newToiletDetailsState = newToiletDetailsState.copy(
             enabled = false
         )
     }
 
-    /**
-     * TODO
-     *
-     */
     fun navigateToNewToiletDetailsScreen(){
         Log.d(Tags.MainViewModelTag.toString(), mapState.newToiletMarkerState.toString())
         newToiletDetailsState = newToiletDetailsState.copy(
@@ -636,15 +679,7 @@ class MainViewModel @Inject constructor(
         )
     }
 
-    private fun printOutToiletDistances(toiletList: List<ToiletMarker>){
-        for (toilet in toiletList) {
-            Log.d("PRINTER", getToiletDistanceMeters(mapState.userPosition, toilet.position).toString())
-        }
-    }
-    /**
-     * TODO
-     *
-     */
+
     private fun refreshToiletMarkers(){
         Log.d(Tags.MainViewModelTag.toString(), "Refreshing toilets")
         val toiletMarkerList = toiletsState.filteredToiletList.map { toilet -> toToiletMarker(toilet) }
@@ -653,7 +688,7 @@ class MainViewModel @Inject constructor(
     }
 
     /**
-     * TODO
+     * Triggers a toast that the clicked button is not yet implemented
      *
      */
     fun placeholder(){
@@ -662,12 +697,12 @@ class MainViewModel @Inject constructor(
 
 
     /**
-     * TODO
+     * Login
      *
      */
     fun login() {
-        val login = authState.loginLogin
-        val password = authState.loginPassword
+        val login = authState.loginLogin.trim()
+        val password = authState.loginPassword.trim()
 
         viewModelScope.launch {
             repository.login(login, password)
@@ -711,7 +746,7 @@ class MainViewModel @Inject constructor(
         authState = authState.copy(registrationError = res)
 
         if (authState.registrationError == null) {
-            repository.register(authState.registerLogin, authState.registerPassword, authState.registerName.trim())
+            repository.register(authState.registerLogin.trim(), authState.registerPassword.trim(), authState.registerName.trim())
         }
     }
 
@@ -860,4 +895,19 @@ class MainViewModel @Inject constructor(
             Log.d("ToiletLogger", toilet.toString())
         }
     }
+}
+
+operator fun PaddingValues.plus(other: PaddingValues): PaddingValues = PaddingValues(
+    start = this.calculateStartPadding(LayoutDirection.Ltr) +
+            other.calculateStartPadding(LayoutDirection.Ltr),
+    top = this.calculateTopPadding() + other.calculateTopPadding(),
+    end = this.calculateEndPadding(LayoutDirection.Ltr) +
+            other.calculateEndPadding(LayoutDirection.Ltr),
+    bottom = this.calculateBottomPadding() + other.calculateBottomPadding(),
+)
+
+fun roundDouble(number: Double): String{
+    val format = DecimalFormat("#.#")
+    format.roundingMode = RoundingMode.DOWN
+    return format.format(number)
 }

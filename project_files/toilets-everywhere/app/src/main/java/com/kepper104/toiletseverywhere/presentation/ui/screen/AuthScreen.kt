@@ -1,5 +1,6 @@
 package com.kepper104.toiletseverywhere.presentation.ui.screen
 
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.kepper104.toiletseverywhere.data.AuthUiStatus
+import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.isNavStackReady
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.ramcosta.composedestinations.annotation.Destination
@@ -41,6 +43,7 @@ fun AuthScreen(
     mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
 
 ) {
+    Log.d(Tags.CompositionLogger.tag, "Recomposing auth main")
 
     isNavStackReady = true
 

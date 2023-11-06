@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Accessible
 import androidx.compose.material.icons.filled.BabyChangingStation
@@ -25,7 +26,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -35,13 +38,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.kepper104.toiletseverywhere.data.NOT_LOGGED_IN_STRING
 import com.kepper104.toiletseverywhere.data.Tags
 import com.kepper104.toiletseverywhere.data.getToiletDistanceMeters
+import com.kepper104.toiletseverywhere.data.getToiletDistanceString
 import com.kepper104.toiletseverywhere.data.getToiletOpenString
 import com.kepper104.toiletseverywhere.data.getToiletWorkingHoursString
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.navigation.ConfirmActionAlertDialog
+import com.kepper104.toiletseverywhere.presentation.roundDouble
 import com.ramcosta.composedestinations.annotation.Destination
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -54,11 +62,12 @@ import kotlin.math.floor
 @Composable
 fun DetailsScreen() {
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
-    Log.d(Tags.CompositionLogger.toString(), "Composing details screen")
+    Log.d(Tags.CompositionLogger.tag, "Recomposing details")
     Column (
         verticalArrangement = Arrangement.Top,
         modifier = Modifier
             .fillMaxSize()
+            .padding(10.dp)
     ){
         val toiletInfo = mainViewModel.toiletViewDetailsState
         val toilet = toiletInfo.toilet!!
@@ -68,10 +77,11 @@ fun DetailsScreen() {
             if (toilet.isPublic) {
                 "Public Toilet"
             } else {
-                "Toilet in ${toilet.placeName}"
+                toilet.placeName
             },
             modifier = Modifier
-                .align(Alignment.CenterHorizontally)
+                .align(Alignment.CenterHorizontally),
+            fontSize = 30.sp
         )
 
         Text(
@@ -81,6 +91,7 @@ fun DetailsScreen() {
         )
 
         if (mainViewModel.toiletViewDetailsState.allReviewsMenuOpen){
+            Spacer(modifier = Modifier.height(10.dp))
             mainViewModel.toiletViewDetailsState.reviews.forEach {
                 ReviewCard(
                     modifier = Modifier
@@ -89,7 +100,8 @@ fun DetailsScreen() {
                         .padding(horizontal = 30.dp),
                     authorName = it.userDisplayName,
                     rating = it.rating,
-                    text = it.review
+                    text = it.review,
+                    textCutoff = null
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
@@ -101,21 +113,27 @@ fun DetailsScreen() {
         Row {
             Text(
                 text = "${
-                    getToiletDistanceMeters(
+                    getToiletDistanceString(getToiletDistanceMeters(
                         mainViewModel.mapState.userPosition,
                         toilet.coordinates
-                    )
+                    ))
+                    
                 } away"
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(imageVector = Icons.Default.StarRate, contentDescription = "Star")
-            Text(text = "4/5 (10)")
+            if (toilet.reviewCount == 0){
+                Text(text = "No reviews yet")
+            } else {
+                Text(text = "${roundDouble(toilet.averageRating)}/5 (${toilet.reviewCount})")
+            }
         }
         Text(text = if (toilet.cost == 0) "Free" else "${toilet.cost}₽")
 
         Text(text = "Working " + getToiletWorkingHoursString(toilet, true))
         Text(text = "Currently ${getToiletOpenString(toilet)}")
 
+        Spacer(modifier = Modifier.height(10.dp))
         if (toilet.disabledAccess || toilet.babyAccess || toilet.parkingNearby){
             Text(text = "Features:")
         }else{
@@ -143,15 +161,29 @@ fun DetailsScreen() {
             }
         }
 
-        Text(text = "Most recent reviews")
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Text(
+            text =
+            if (mainViewModel.toiletViewDetailsState.reviews.isNotEmpty())
+                "Most recent review"
+            else
+                "This toilet has no reviews yet"
+        )
+        Spacer(modifier = Modifier.height(10.dp))
 
         Column(
             modifier = Modifier.clickable { mainViewModel.openAllReviews() }
         ){
+            val reviewsCount = 1
             val allReviews = mainViewModel.toiletViewDetailsState.reviews
-            val reviewsToShow = if (allReviews.size <= 1) allReviews else allReviews.subList(0, 1)
+            val reviewsToShow =
+                if (allReviews.size <= reviewsCount)
+                    allReviews
+                else
+                    allReviews.subList(0, reviewsCount)
+
             reviewsToShow.forEach {
-                Log.d(Tags.TempLogger.tag, it.review.toString())
                 ReviewCard(
                     modifier = Modifier
                         .align(Alignment.CenterHorizontally)
@@ -159,37 +191,40 @@ fun DetailsScreen() {
                         .padding(horizontal = 30.dp),
                     authorName = it.userDisplayName,
                     rating = it.rating,
-                    text = it.review
+                    text = it.review,
+                    preview = true,
+                    textCutoff = 15
                 )
                 Spacer(modifier = Modifier.height(10.dp))
             }
         }
 
-//        }
-        Text(text = "Have you been here? Leave a review!")
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .padding(horizontal = 30.dp)
-//                .border(10.dp, Color.Gray, shape = RoundedCornerShape(3.dp))
-//        ) {
-//            RatingBar(clickable = true)
-//        }
-        PostReviewCard(viewModel = mainViewModel, modifier = Modifier.padding(10.dp).fillMaxWidth())
-
-//        Spacer(modifier = Modifier.weight(1f))
-        Button(onClick = { mainViewModel.moveCameraToToiletLocation(toilet = toilet) }) {
-            Text(text = "Go to map")
+        Spacer(modifier = Modifier.height(30.dp))
+        if (mainViewModel.loggedInUserState.currentUserName != NOT_LOGGED_IN_STRING){
+            Text(text = "Have you been here? Leave a review!")
+            PostReviewCard(
+                viewModel = mainViewModel,
+                modifier = Modifier
+                    .padding(10.dp)
+                    .fillMaxWidth()
+            )
+        } else {
+            Text(text = "Login in to leave a review!")
         }
 
         if (mainViewModel.toiletViewDetailsState.reviewPostConfirmationDialogOpen){
             ConfirmActionAlertDialog(
-                onDismissRequest = { mainViewModel.closeReviewConfirmationWindow() },
-                onConfirmation = { mainViewModel.closeReviewConfirmationWindow(); mainViewModel.postToiletReview() },
+                onDismissRequest = { mainViewModel.closeReviewConfirmationDialog() },
+                onConfirmation = { mainViewModel.closeReviewConfirmationDialog(); mainViewModel.postToiletReview() },
                 dialogText = "Confirm posting a new toilet review",
                 icon = Icons.Default.RateReview
             )
         }
+
+        if (mainViewModel.toiletViewDetailsState.reportDialogOpen){
+            ToiletReportDialog(viewModel = mainViewModel)
+        }
+
         
 
     }
@@ -197,23 +232,44 @@ fun DetailsScreen() {
 }
 
 @Composable
-fun ReviewCard(modifier: Modifier = Modifier, authorName: String, rating: Int, text: String?) {
+fun ReviewCard(
+    modifier: Modifier = Modifier,
+    authorName: String,
+    rating: Int,
+    text: String?,
+    preview: Boolean = false,
+    textCutoff: Int? = null
+) {
     Card(
         modifier = modifier
     ) {
         Column(
             modifier = Modifier.padding(10.dp)
         ) {
-            Row{
+            Row {
                 Text(text = authorName)
                 Spacer(modifier = Modifier.weight(1f))
                 RatingBar(rating = rating.toDouble())
             }
-            if (text != null){
-                Text(text = text)
-
+            if (preview) {
+                Row {
+                    if (text != null) {
+                        Text(
+                            text =
+                            if (text.length <= textCutoff!!)
+                                text
+                            else
+                                text.subSequence(0, textCutoff - 3).toString() + "..."
+                        )
+                    }
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(text = "Click to view all reviews")
+                }
+            } else {
+                if (text != null) {
+                    Text(text = text)
+                }
             }
-
         }
     }
 }
@@ -228,7 +284,9 @@ fun PostReviewCard(
         modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(10.dp).fillMaxWidth()
+            modifier = Modifier
+                .padding(10.dp)
+                .fillMaxWidth()
         ) {
             Text(text = "Select your rating:  ")
 
@@ -240,11 +298,14 @@ fun PostReviewCard(
                     viewModel.toiletViewDetailsState =
                         viewModel.toiletViewDetailsState.copy(currentReviewText = it)
                 },
-                placeholder = { Text(text = "If you want to, leave a text review")}
+                placeholder = { Text(text = "If you want to, leave a text review")},
+                modifier = Modifier.fillMaxWidth()
             )
+            Spacer(modifier = Modifier.height(5.dp))
+
             Row(modifier = Modifier.fillMaxWidth()){
                 Spacer(modifier = Modifier.weight(1f))
-                Button(onClick = { viewModel.showReviewConfirmationWindow() }) {
+                Button(onClick = { viewModel.showReviewConfirmationDialog() }) {
                     Text(text = "Post review")
                 }
             }
@@ -294,9 +355,14 @@ fun ClickableRatingBar(
         for (i in 1..5){
             IconButton(onClick = {
                 viewModel.toiletViewDetailsState =
-                    viewModel.toiletViewDetailsState.copy(selectedRating = i); Log.d(Tags.TempLogger.tag, i.toString())
+                    viewModel.toiletViewDetailsState.copy(selectedRating = i)
             }) {
-                Icon(imageVector = if (i <= rating) Icons.Outlined.Star else Icons.Outlined.StarOutline, contentDescription = null, tint = starsColor, modifier = Modifier.scale(2f))
+                Icon(
+                    imageVector = if (i <= rating) Icons.Outlined.Star else Icons.Outlined.StarOutline,
+                    contentDescription = null,
+                    tint = starsColor,
+                    modifier = Modifier.scale(2f)
+                )
             }
         }
     }
@@ -306,11 +372,63 @@ fun ClickableRatingBar(
 @Preview
 @Composable
 fun ReviewCardPreview() {
-    ReviewCard(authorName = "Kirill", rating = 3, text = "Impressive, very nice")
+    ReviewCard(authorName = "Kirill", rating = 3, text = "Impressive, very nice", textCutoff = 5)
 }
 
-//@Preview
-//@Composable
-//fun LeaveReviewCardPreview() {
-//    LeaveReviewCard()
-//}
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ToiletReportDialog(
+    viewModel: MainViewModel
+) {
+    Dialog(onDismissRequest = { viewModel.closeReportDialog() }) {
+        Card(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(375.dp)
+                .padding(10.dp),
+            shape = RoundedCornerShape(16.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+
+                Text(
+                    text =
+                            "You are about to report " +
+                            "'${viewModel.toiletViewDetailsState.toilet!!.placeName}' " +
+                            "by '${viewModel.toiletViewDetailsState.authorName}', " +
+                            "please describe what the problem is",
+
+                    modifier = Modifier.padding(5.dp),
+                )
+                OutlinedTextField(
+                    value = viewModel.toiletViewDetailsState.reportMessage,
+                    onValueChange = {
+                        viewModel.toiletViewDetailsState =
+                            viewModel.toiletViewDetailsState.copy(reportMessage = it)
+                    })
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                ) {
+                    TextButton(
+                        onClick = { viewModel.closeReportDialog() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Dismiss")
+                    }
+                    TextButton(
+                        onClick = { viewModel.closeReportDialog(); viewModel.sendToiletReport() },
+                        modifier = Modifier.padding(8.dp),
+                    ) {
+                        Text("Confirm")
+                    }
+                }
+            }
+        }
+    }
+}

@@ -18,6 +18,7 @@ import com.kepper104.toiletseverywhere.isNavStackReady
 import com.kepper104.toiletseverywhere.presentation.MainViewModel
 import com.kepper104.toiletseverywhere.presentation.navigation.BottomNavigationBar
 import com.kepper104.toiletseverywhere.presentation.navigation.HandleEvents
+import com.kepper104.toiletseverywhere.presentation.navigation.HandleMessageToasts
 import com.kepper104.toiletseverywhere.presentation.navigation.HandleNavigationEvents
 import com.kepper104.toiletseverywhere.presentation.navigation.MapTopAppBar
 import com.kepper104.toiletseverywhere.presentation.navigation.NavScaffold
@@ -45,7 +46,7 @@ fun MainScreen(
 ) {
     val navController = rememberNavController()
     val mainViewModel: MainViewModel = hiltViewModel(LocalContext.current as ComponentActivity)
-    Log.d(Tags.CompositionLogger.tag, "Entering MainScreen!")
+    Log.d(Tags.CompositionLogger.tag, "Recomposing main screen")
 
     var currentRoute: Route by remember{
         mutableStateOf(AuthScreenDestination)
@@ -80,6 +81,7 @@ fun MainScreen(
         }
     }
 
+    HandleMessageToasts(viewModel = mainViewModel, composeContext = LocalContext.current)
     HandleEvents(viewModel = mainViewModel, composeContext = LocalContext.current)
     HandleNavigationEvents(viewModel = mainViewModel, navController = navController)
 

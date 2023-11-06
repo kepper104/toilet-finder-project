@@ -15,6 +15,7 @@ import com.kepper104.toiletseverywhere.data.api.LoginData
 import com.kepper104.toiletseverywhere.data.api.LoginResponse
 import com.kepper104.toiletseverywhere.data.api.MainApi
 import com.kepper104.toiletseverywhere.data.api.RegisterData
+import com.kepper104.toiletseverywhere.data.api.ToiletReportData
 import com.kepper104.toiletseverywhere.data.api.ToiletReviewData
 import com.kepper104.toiletseverywhere.data.fromApiToilet
 import com.kepper104.toiletseverywhere.data.fromApiUser
@@ -73,7 +74,7 @@ class RepositoryImplementation (
      * Login a user by making a call to [MainApi] with given [login] and [password].
      */
     override suspend fun login(login: String, password: String) {
-        Log.d(Tags.TempLogger.tag, "Logging in")
+        Log.d(Tags.RepositoryLogger.tag, "Logging in")
 
         loginStatus = LoginStatus.Processing
 
@@ -95,7 +96,7 @@ class RepositoryImplementation (
      * from repository memory and datastore.
      */
     override suspend fun logout() {
-        Log.d(Tags.TempLogger.tag, "Logging out")
+        Log.d(Tags.RepositoryLogger.tag, "Logging out")
 
         clearAuthDataStore()
     }
@@ -105,7 +106,7 @@ class RepositoryImplementation (
      * that consists of already availability verified [login], [password] and [displayName].
      */
     override suspend fun register(login: String, password: String, displayName: String) {
-        Log.d(Tags.TempLogger.tag, "Registering")
+        Log.d(Tags.RepositoryLogger.tag, "Registering")
 
         try{
             val res = mainApi.registerUser(RegisterData(login, password, displayName))
@@ -117,7 +118,6 @@ class RepositoryImplementation (
 
             } else{
                 Log.d(Tags.RepositoryLogger.toString(), "Login failure")
-                // TODO login failure handling and messaging
 
             }
         } catch (e: Exception){
@@ -129,7 +129,7 @@ class RepositoryImplementation (
      * Login a user anonymously, making the app usable, but without certain features.
      */
     override suspend fun continueWithoutLogin() {
-        Log.d(Tags.TempLogger.tag, "Logging in anonymously")
+        Log.d(Tags.RepositoryLogger.tag, "Logging in anonymously")
 
         clearAuthDataStore()
         saveAuthDataStore(isLoggedIn = true)
@@ -141,7 +141,7 @@ class RepositoryImplementation (
      * and null if this data if currently unavailable. (e.g. API encountered a network error).
      */
     override suspend fun checkIfLoginExists(login: String): Boolean? {
-        Log.d(Tags.TempLogger.tag, "Checking login availability")
+        Log.d(Tags.RepositoryLogger.tag, "Checking login availability")
 
         try {
             val res = mainApi.checkLogin(login)
@@ -188,13 +188,12 @@ class RepositoryImplementation (
      * or null, if this data if currently unavailable. (e.g. API encountered a network error).
      */
     override suspend fun retrieveToilets(): List<Toilet>? {
-        Log.d(Tags.TempLogger.tag, "Retrieving toilets")
+        Log.d(Tags.RepositoryLogger.tag, "Retrieving toilets")
         try{
             val toilets = mainApi.getToilets()
 
-            if (toilets.isSuccessful){
-                val mappedToilets = toilets.body()!!.map { apiToilet -> fromApiToilet(apiToilet) }
-                return mappedToilets.map { toilet ->  toilet.copy(authorName = retrieveUsernameById(toilet.authorId))}
+            if (toilets.isSuccessful) {
+                return toilets.body()!!.map { apiToilet -> fromApiToilet(apiToilet) }
             }
         } catch (e: Exception){
             Log.e(Tags.NetworkLogger.tag, e.message.toString())
@@ -208,7 +207,7 @@ class RepositoryImplementation (
      * or null if not or in case of network error.
      */
     override suspend fun retrieveToiletById(id: Int): Toilet? {
-        Log.d(Tags.TempLogger.tag, "Retrieving toilet by id")
+        Log.d(Tags.RepositoryLogger.tag, "Retrieving toilet by id")
 
         try {
             val toilet = mainApi.getToiletById(id)
@@ -229,7 +228,7 @@ class RepositoryImplementation (
      * or null if not or in case of network error.
      */
     override suspend fun retrieveUserById(id: Int): User? {
-        Log.d(Tags.TempLogger.tag, "Retrieving user by id")
+        Log.d(Tags.RepositoryLogger.tag, "Retrieving user by id")
 
         try{
             val user = mainApi.getUserById(id)
@@ -249,7 +248,7 @@ class RepositoryImplementation (
      * Requires a [Toilet] class instance with all the data of the new toilet.
      */
     override suspend fun createToilet(toilet: Toilet) {
-        Log.d(Tags.TempLogger.tag, "Creating toilet")
+        Log.d(Tags.RepositoryLogger.tag, "Creating toilet")
 
         try{
             val res = mainApi.createToilet(toApiToilet(toilet))
@@ -348,6 +347,18 @@ class RepositoryImplementation (
         }
         return null
     }
+    /**
+     * Send an API report about misinformation in toilet's info to be manually reviewed by admin.
+     * Requires [toiletId] and report [message].
+     * Does not have any retries or network error indication except for Log.e
+     */
+    override suspend fun sendToiletReport(toiletId: Int, message: String) {
+        try{
+            mainApi.sendToiletReport(ToiletReportData(currentUser.id, toiletId, message))
+        } catch (e: Exception) {
+            Log.e(Tags.NetworkLogger.tag, e.toString())
+        }
+    }
 
     // Private functions ------------------------------
 
@@ -367,7 +378,7 @@ class RepositoryImplementation (
      * that only returns user's display name or "Error" in case of some error.
      */
     private suspend fun retrieveUsernameById(id: Int): String{
-        Log.d(Tags.TempLogger.tag, "Retrieving username by id")
+        Log.d(Tags.RepositoryLogger.tag, "Retrieving username by id")
 
         // Error handling not needed since it already is in retrieveUserById
         val user = retrieveUserById(id)
@@ -463,7 +474,7 @@ class RepositoryImplementation (
      * to then be saved in repository memory.
      */
     private suspend fun checkLogin(login: String, password: String): LoginResponse? {
-        Log.d(Tags.TempLogger.tag, "Checking login")
+        Log.d(Tags.RepositoryLogger.tag, "Checking login")
 
         try{
             val res = mainApi.loginUser(LoginData(login, password))

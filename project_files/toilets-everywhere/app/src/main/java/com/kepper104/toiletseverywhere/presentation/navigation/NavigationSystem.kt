@@ -16,7 +16,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.FilterAlt
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Report
 import androidx.compose.material.icons.outlined.FilterAlt
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -202,8 +204,15 @@ fun MapTopAppBar() {
         },
         actions = {
 
-            // Showing no icons when on toilet details view
+            // Showing open on map icon when on toilet details view
             if (mainViewModel.toiletViewDetailsState.currentDetailScreen != CurrentDetailsScreen.NONE && destinationToDetailScreenMapping[mainViewModel.toiletViewDetailsState.currentDetailScreen] == mainViewModel.navigationState.currentDestination){
+                IconButton(onClick = { mainViewModel.moveCameraToToiletLocation(toilet = mainViewModel.toiletViewDetailsState.toilet!!)} ) {
+                    Icon(imageVector = Icons.Default.Map, contentDescription = "Open on map")
+                }
+                IconButton(onClick = { mainViewModel.openReportDialog() } ) {
+                    Icon(imageVector = Icons.Default.Report, contentDescription = "Report toilet")
+                }
+
                 return@TopAppBar
             }
 
@@ -297,7 +306,7 @@ fun MapTopAppBar() {
 @Composable
 fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
     LaunchedEffect(key1 = true) {
-        viewModel.eventFlow.collect { event ->
+        viewModel.screenEventFlow.collect { event ->
             when (event) {
                 ScreenEvent.ToiletAddingDisabledToast -> {
                     makeToast("Toilet adding canceled", composeContext, Toast.LENGTH_LONG)
@@ -333,8 +342,20 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
                 ScreenEvent.ReviewPostFailToast -> {
                     makeToast("An error occurred while posting the review", composeContext, Toast.LENGTH_SHORT)
                 }
+
+                ScreenEvent.ReportSentToast -> {
+                    makeToast("Thank you for sending a report, we will look into it", composeContext, Toast.LENGTH_SHORT)
+                }
             }
         }
+    }
+}
+
+@Composable
+fun HandleMessageToasts(viewModel: MainViewModel, composeContext: Context) {
+    LaunchedEffect(key1 = true) {
+        viewModel.messageEventFlow.collect { event ->
+            makeToast(event, composeContext, 5)}
     }
 }
 
