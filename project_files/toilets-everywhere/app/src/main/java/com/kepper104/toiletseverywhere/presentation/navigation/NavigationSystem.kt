@@ -63,10 +63,8 @@ import com.ramcosta.composedestinations.navigation.popBackStack
 import com.ramcosta.composedestinations.navigation.popUpTo
 import com.ramcosta.composedestinations.utils.isRouteOnBackStack
 
-// TODO maybe move to utils
 val destinationToDetailScreenMapping = mapOf(CurrentDetailsScreen.MAP to BottomBarDestination.MapView, CurrentDetailsScreen.LIST to BottomBarDestination.ListView)
 
-// TODO figure out lagging and stuttering in map view
 /**
  * Bottom navigation bar component, contains buttons for navigating between app modules,
  * takes a [navController] to handle the navigation
@@ -351,6 +349,10 @@ fun HandleEvents(viewModel: MainViewModel, composeContext: Context) {
     }
 }
 
+/**
+ * Composable function that handles sending custom message toasts received from the [viewModel].
+ * Requires [composeContext] to show toasts.
+ */
 @Composable
 fun HandleMessageToasts(viewModel: MainViewModel, composeContext: Context) {
     LaunchedEffect(key1 = true) {
@@ -372,9 +374,6 @@ fun HandleNavigationEvents(viewModel: MainViewModel, navController: NavHostContr
                 NavigationEvent.NavigateToList -> viewModel.placeholder()
                 NavigationEvent.NavigateToMap -> {
                     navController.navigate(BottomBarDestination.MapView.direction){
-//                        popUpTo(NavGraphs.root){
-//                            saveState = true
-//                        }
                         launchSingleTop = true
                         restoreState = true
                     }
@@ -462,6 +461,11 @@ fun FilterDropdownMenu(viewModel: MainViewModel) {
     }
 }
 
+/**
+ * A configurable dialog asking to confirm an action with provided message [dialogText] and [icon].
+ * [onDismissRequest] and [onConfirmation] callbacks need to be passed
+ * to handle closing dialog or confirming action
+ */
 @Composable
 fun ConfirmActionAlertDialog(
     onDismissRequest: () -> Unit,

@@ -40,8 +40,7 @@ fun getToiletDistanceString(distanceMeters: Int): String{
  * Use [toilet]'s working hours and current time to calculate if the toilet is currently open
  * and return a [String] "Open" or "Closed"
  */
-fun getToiletOpenString(toilet: Toilet): String {
-    val currentTime = LocalTime.now()
+fun getToiletOpenString(toilet: Toilet, currentTime: LocalTime = LocalTime.now()): String {
     if (toilet.openingTime <= currentTime &&  currentTime <= toilet.closingTime){
         return "Open"
     }
@@ -51,8 +50,8 @@ fun getToiletOpenString(toilet: Toilet): String {
 /**
  * Get [toilet]'s marker color: Green or Red if toilet is currently open or closed.
  */
-fun getToiletStatusColor(toilet: Toilet): BitmapDescriptor{
-    return if (getToiletOpenString(toilet) == "Open")
+fun getToiletStatusColor(toilet: Toilet, currentTime: LocalTime = LocalTime.now()): BitmapDescriptor{
+    return if (getToiletOpenString(toilet, currentTime) == "Open")
                 ToiletIcons.ToiletGreen.icon
             else
                 ToiletIcons.ToiletRed.icon
